@@ -51,6 +51,7 @@ namespace bronco {
             void read_message(const boost::system::error_code &error);
 
         private:
+            enum { type_header_size = 4, length_header_size = 4 };
             std::vector<char> type_, length_;
             boost::asio::io_service &io_;
             boost::asio::ip::tcp::socket socket_;
@@ -69,11 +70,10 @@ namespace bronco {
             void read_size(const boost::system::error_code &error);
 
         protected:
-            enum { type_header_size = 4, length_header_size = 4 };
             /**
              * Read type of next message from socket
              */
-            void read_header();
+            void read_type();
     };
 } // namespace bronco;
 

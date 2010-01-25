@@ -36,6 +36,8 @@ void peermanager::handle_incoming(const boost::system::error_code &error)
 {
     /* Check for error from async_accept */
     if (!error) {
+        /* Save connection to list */
+        peers_.push_back(in_conn_);
         in_conn_->handle_peer();
     }
 
