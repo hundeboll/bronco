@@ -45,6 +45,8 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
             || error == boost::asio::error::connection_reset
             || error == boost::asio::error::bad_descriptor
             || error == boost::asio::error::broken_pipe) {
+        /* Closing socket properly */
+        close();
         std::cout << "Connection closed: " << error.message() << std::endl;
     } else {
         throw std::runtime_error("Socket error: " + error.message());
@@ -129,8 +131,7 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
         if (reply.busy()) {
             /* Rejected, closing connection */
             std::cout << "Rejected by " << reply.peer_hash() << std::endl;
-            socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-            socket().close();
+            close();
         } else {
             /* Accepted, proceeding */
             std::cout << "Accepted by " << reply.peer_hash() << std::endl;
@@ -177,6 +178,5 @@ void bronco::peerconnection::process_message(const protocol::Leave &leave)
         std::cout << "Received leave from: " << leave.peer_hash() << std::endl;
 
         /* Close socket */
-        this->socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-        this->socket().close();
+        close();
 }

@@ -39,8 +39,7 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
         in_peers_.push_back(in_conn_);
 
         /* Handle control to connection */
-        std::cout << (in_peers_.size() < me.in_conn_max()) << std::endl;
-        in_conn_->handle_peer(in_peers_.size() < me.in_conn_max());
+        in_conn_->handle_peer(update_connections(in_peers_) < me.in_conn_max());
     }
 
     /* Listen for next incoming connection */
@@ -67,5 +66,21 @@ void bronco::peermanager::connect_peer(const std::string &address, const std::st
 }
 
 void bronco::peermanager::connect_peer(const std::string &address, const size_t port) {
+    /* Wrap port */
     connect_peer(address, utils::to_string(port));
+}
+
+size_t bronco::peermanager::update_connections(std::vector<peerconnection::pointer> &peers)
+{
+    /* Remove objects with closed sockets */
+    typedef std::vector<peerconnection::pointer>::iterator peer_it;
+    for (peer_it it(peers.begin()), end(peers.end()); it != end; it++) {
+        if (!(*it)->socket().is_open()) {
+            std::cout << "Removing connection" << std::endl;
+            peers.erase(it);
+        }
+    }
+
+    /* Return new size */
+    return peers.size();
 }

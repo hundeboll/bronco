@@ -59,6 +59,11 @@ namespace bronco {
             void handle_incoming(const boost::system::error_code &error);
 
             /**
+             * Clean up closed connections
+             */
+            size_t update_connections(std::vector<peerconnection::pointer> &peers);
+
+            /**
              * Select random port
              * \return Selected port
              */

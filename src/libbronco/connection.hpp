@@ -49,6 +49,20 @@ namespace bronco {
             }
 
             /**
+             * Close socket properly
+             */
+            void close()
+            {
+                /* Don't close a non-open socket */
+                if (socket_.is_open()) {
+                    socket_.cancel();
+                    if (socket_.available())
+                        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+                    socket_.close();
+                }
+            }
+
+            /**
              * Create headers and write data to the socket
              * \param message Message defined in protocol:: to be written
              */
