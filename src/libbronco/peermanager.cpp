@@ -65,7 +65,8 @@ void bronco::peermanager::connect_peer(const std::string &address, const std::st
     out_peers_.push_back(out_conn_);
 }
 
-void bronco::peermanager::connect_peer(const std::string &address, const size_t port) {
+void bronco::peermanager::connect_peer(const std::string &address, const size_t port)
+{
     /* Wrap port */
     connect_peer(address, utils::to_string(port));
 }

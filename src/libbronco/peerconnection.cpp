@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "peerconnection.hpp"
+#include "peermanager.hpp"
 
 void bronco::peerconnection::handle_peer(const bool accept)
 {
@@ -46,7 +47,7 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
             || error == boost::asio::error::bad_descriptor
             || error == boost::asio::error::broken_pipe) {
         /* Closing socket properly */
-        close();
+        close_socket();
         std::cout << "Connection closed: " << error.message() << std::endl;
     } else {
         throw std::runtime_error("Socket error: " + error.message());
@@ -131,7 +132,7 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
         if (reply.busy()) {
             /* Rejected, closing connection */
             std::cout << "Rejected by " << reply.peer_hash() << std::endl;
-            close();
+            close_socket();
         } else {
             /* Accepted, proceeding */
             std::cout << "Accepted by " << reply.peer_hash() << std::endl;
@@ -178,5 +179,5 @@ void bronco::peerconnection::process_message(const protocol::Leave &leave)
         std::cout << "Received leave from: " << leave.peer_hash() << std::endl;
 
         /* Close socket */
-        close();
+        close_socket();
 }

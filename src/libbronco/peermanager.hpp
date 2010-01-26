@@ -4,6 +4,8 @@
 #define _PERRMANAGER_H
 
 #include <boost/noncopyable.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <string>
 #include <vector>
@@ -13,8 +15,10 @@
 #include "serverconnection.hpp"
 
 namespace bronco {
-    class peermanager : private boost::noncopyable {
+    class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
         public:
+            typedef boost::shared_ptr<peermanager> pointer;
+
             /**
              * Construct manager object to accept and create peer connections
              * \param io io_service to use
@@ -22,12 +26,12 @@ namespace bronco {
             peermanager(boost::asio::io_service &io);
 
             /**
-             * Count connected peers
-             * \return counted value
+             * Wrapper to update connections
              */
-            size_t count_peers()
+            void update_connections()
             {
-                return in_peers_.size() + out_peers_.size();
+                update_connections(in_peers_);
+                update_connections(out_peers_);
             }
 
             /** Connect to specified peer
@@ -60,6 +64,7 @@ namespace bronco {
 
             /**
              * Clean up closed connections
+             * \param peers Vector with connections to update
              */
             size_t update_connections(std::vector<peerconnection::pointer> &peers);
 

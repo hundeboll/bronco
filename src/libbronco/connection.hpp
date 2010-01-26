@@ -51,13 +51,18 @@ namespace bronco {
             /**
              * Close socket properly
              */
-            void close()
+            void close_socket()
             {
                 /* Don't close a non-open socket */
                 if (socket_.is_open()) {
+                    /* Stop all async operations */
                     socket_.cancel();
+
+                    /* Shutdown current reads */
                     if (socket_.available())
                         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+
+                    /* Close socket */
                     socket_.close();
                 }
             }

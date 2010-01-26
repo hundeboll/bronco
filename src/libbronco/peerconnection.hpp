@@ -11,6 +11,7 @@
 
 #include "connection.hpp"
 
+
 namespace bronco {
     class peerconnection : public connection, public boost::enable_shared_from_this<peerconnection> {
         public:
