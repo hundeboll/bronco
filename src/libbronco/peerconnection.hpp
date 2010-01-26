@@ -34,7 +34,7 @@ namespace bronco {
             }
 
             void handle_peer();
-            void handle_read(const boost::system::error_code &error);
+            void handle_read(const boost::system::error_code &error, size_t type);
             void handle_write(const boost::system::error_code &error);
             void handle_connect(const boost::system::error_code &error);
 

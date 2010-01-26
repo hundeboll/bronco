@@ -7,6 +7,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 
@@ -18,7 +19,7 @@ namespace bronco {
             /**
              * Virtual function used by read_type to handle type
              */
-            virtual void handle_read(const boost::system::error_code &error) = 0;
+            virtual void handle_read(const boost::system::error_code &error, size_t type) = 0;
             virtual void handle_write(const boost::system::error_code &error) = 0;
 
             /**
@@ -29,9 +30,10 @@ namespace bronco {
                 : io_(io),
                 socket_(io),
                 type_(type_header_size),
-                length_(length_header_size),
-                out_message_(100, 'a')
-            {}
+                hex_length_(length_header_size)
+            {
+                GOOGLE_PROTOBUF_VERIFY_VERSION;
+            }
 
             /**
              * Return socket to use in caller classes
@@ -44,7 +46,39 @@ namespace bronco {
              * Create headers and write data to the socket
              * \param message Message defined in protocol:: to be written
              */
-            void write_message();
+            template<typename T>
+            void write_message(T &message)
+            {
+                /* Serialize message */
+                if (!message.SerializeToString(&out_message_)) {
+                    throw std::runtime_error("Failed to serialize object");
+                }
+
+                /* Create header with type of message and size of serialized data */
+                make_header(message.type(), out_message_.size());
+
+                /* Transfer header and message */
+                boost::asio::write(socket_, boost::asio::buffer(out_header_.str()));
+                boost::asio::async_write(socket_,
+                        boost::asio::buffer(out_message_),
+                        boost::asio::transfer_all(),
+                        boost::bind(&connection::handle_write, this, boost::asio::placeholders::error));
+            }
+
+            template<typename T>
+            void deserialize(T &message)
+            {
+                /* Prepare streambuf for output */
+                in_message_.commit(length_);
+
+                /* Create istream by reference */
+                std::istream is(&in_message_);
+
+                /* Deserialize */
+                if (!message.ParseFromIstream(&is)) {
+                    throw std::runtime_error("Failed to deserialize object");
+                }
+            }
 
             /**
              * Receive message from socket and pass to appropriate handler
@@ -57,7 +91,8 @@ namespace bronco {
             boost::asio::ip::tcp::socket socket_;
 
             enum { type_header_size = 4, length_header_size = 4 };
-            std::vector<char> type_, length_;
+            std::vector<char> type_, hex_length_;
+            size_t length_;
             std::ostringstream out_header_;
 
             /**
@@ -79,8 +114,14 @@ namespace bronco {
              */
             size_t convert_header(std::vector<char> &header);
 
+            template<typename T>
+            void serialize(T &message) {
+
+            }
+
         protected:
-            std::vector<char> in_message_, out_message_;
+            std::string out_message_;
+            boost::asio::streambuf in_message_;
             /**
              * Read type of next message from socket
              */

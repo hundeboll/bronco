@@ -13,16 +13,35 @@ void bronco::peerconnection::handle_peer()
 
 void bronco::peerconnection::handle_connect(const boost::system::error_code &error)
 {
-    out_message_.at(99) = '\0';
-    write_message();
+    /* Handshake */
+    protocol::Connect connect;
+    connect.set_peer_hash("Hello World!");
+    write_message(connect);
 }
 
-void bronco::peerconnection::handle_read(const boost::system::error_code &error)
+void bronco::peerconnection::handle_read(const boost::system::error_code &error, size_t type)
 {
-    write_message();
+    if (!error) {
+        protocol::Connect connect;
+
+        switch (type) {
+            case protocol::connecttype:
+                deserialize(connect);
+                break;
+        }
+
+        std::cout << "Received message: " << connect.peer_hash() << std::endl;
+    } else {
+        throw std::runtime_error("Read error: " + error.message());
+    }
+
 }
 
 void bronco::peerconnection::handle_write(const boost::system::error_code &error)
 {
-    read_type();
+    if (!error) {
+        std::cout << "Message written" << std::endl;
+    } else {
+        throw std::runtime_error("Read error: " + error.message());
+    }
 }
