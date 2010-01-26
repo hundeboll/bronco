@@ -19,12 +19,23 @@ namespace bronco {
 
             /**
              * Determine if a new connection is accepted
+             * \return True if more connections are allowed
              */
-            bool allow_connection() {
-
-                return true;
+            bool allow_connection()
+            {
+                if (in_peers_.size() < me.in_conn_max()) {
+                    /* New peer is welcome */
+                    return true;
+                } else {
+                    /* Reject connection */
+                    return false;
+                }
             }
 
+            /**
+             * Count connected peers
+             * \return counted value
+             */
             size_t count_peers()
             {
                 return in_peers_.size() + out_peers_.size();
@@ -59,6 +70,7 @@ namespace bronco {
 
             /**
              * Select random port
+             * \return Selected port
              */
             size_t select_port()
             {

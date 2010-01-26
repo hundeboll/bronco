@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 {
     /* Catch signals */
     signal(SIGINT, close_peer);
+    signal(SIGTERM, close_peer);
 
     bronco::peermanager manager(io);
     io.run();

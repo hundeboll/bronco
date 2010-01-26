@@ -7,23 +7,24 @@
 #include "peermanager.hpp"
 #include "utils.hpp"
 
-using namespace bronco;
-
-peermanager::peermanager(boost::asio::io_service &io)
+bronco::peermanager::peermanager(boost::asio::io_service &io)
     : port_(select_port()),
     io_(io),
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     out_conn_(peerconnection::create(io_)),
     in_conn_(peerconnection::create(io_))
 {
+    /* Setup configuration */
+    me.set_in_conn_max(1);
+
     /* Open port for listening */
     listen();
 
-    /* Connect to self */
+    /* Test by connecting to self */
     connect_peer("localhost", port_);
 }
 
-void peermanager::listen()
+void bronco::peermanager::listen()
 {
     std::cout << "Listening on port " << port_ << std::endl;
 
@@ -32,7 +33,7 @@ void peermanager::listen()
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
 
-void peermanager::handle_incoming(const boost::system::error_code &error)
+void bronco::peermanager::handle_incoming(const boost::system::error_code &error)
 {
     /* Check for error from async_accept */
     if (!error) {
@@ -49,7 +50,7 @@ void peermanager::handle_incoming(const boost::system::error_code &error)
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
 
-void peermanager::connect_peer(const std::string &address, const size_t port)
+void bronco::peermanager::connect_peer(const std::string &address, const size_t port)
 {
     /* Resolve IP and port to an endpoint */
     using boost::asio::ip::tcp;
