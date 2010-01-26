@@ -8,6 +8,7 @@
 
 void bronco::peerconnection::handle_peer()
 {
+    /* Start reading loop */
     read_type();
 }
 
@@ -24,6 +25,7 @@ void bronco::peerconnection::handle_connect(const boost::system::error_code &err
 
 void bronco::peerconnection::handle_write(const boost::system::error_code &error)
 {
+    /* Check if write operation resulted in error */
     if (error) {
         handle_error(error);
     }
@@ -31,6 +33,7 @@ void bronco::peerconnection::handle_write(const boost::system::error_code &error
 
 void bronco::peerconnection::handle_error(const boost::system::error_code &error)
 {
+    /* Check if error was caused by closing socket */
     if (error == boost::asio::error::eof
             || error == boost::asio::error::connection_reset
             || error == boost::asio::error::bad_descriptor) {
@@ -42,8 +45,10 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
 
 void bronco::peerconnection::handle_read(const boost::system::error_code &error, const size_t type)
 {
+    /* Check if read operation resulted in error */
     if (!error) {
-            process_type(type);
+        /* Read OK */
+        process_type(type);
     } else {
         handle_error(error);
     }
@@ -58,6 +63,7 @@ void bronco::peerconnection::process_type(const size_t type)
     protocol::Stop stop;
     protocol::Leave leave;
 
+    /* Perform operation determined by message type */
     switch (type) {
         case protocol::connecttype:
             deserialize(connect);

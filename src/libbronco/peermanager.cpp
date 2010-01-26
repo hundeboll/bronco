@@ -37,7 +37,9 @@ void peermanager::handle_incoming(const boost::system::error_code &error)
     /* Check for error from async_accept */
     if (!error) {
         /* Save connection to list */
-        peers_.push_back(in_conn_);
+        in_peers_.push_back(in_conn_);
+
+        /* Handle control to connection */
         in_conn_->handle_peer();
     }
 
@@ -61,5 +63,5 @@ void peermanager::connect_peer(const std::string &address, const size_t port)
             boost::bind(&peerconnection::handle_connect, out_conn_, boost::asio::placeholders::error));
 
     /* Save connection */
-    peers_.push_back(out_conn_);
+    out_peers_.push_back(out_conn_);
 }

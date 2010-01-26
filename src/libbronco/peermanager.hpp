@@ -17,18 +17,27 @@ namespace bronco {
         public:
             peermanager(boost::asio::io_service &io);
 
+            /**
+             * Determine if a new connection is accepted
+             */
+            bool allow_connection() {
+
+                return true;
+            }
+
             size_t count_peers()
             {
-                return peers_.size();
+                return in_peers_.size() + out_peers_.size();
             }
 
         private:
             size_t port_;
-            std::vector<peerconnection::pointer> peers_;
-            serverconnection::pointer server_ptr_;
+            std::vector<peerconnection::pointer> in_peers_, out_peers_;
             boost::asio::io_service &io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             peerconnection::pointer out_conn_, in_conn_;
+            serverconnection::pointer server_ptr_;
+            protocol::Peer me;
 
             /**
              * Accept incoming connections

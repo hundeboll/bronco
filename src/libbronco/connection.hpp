@@ -17,9 +17,13 @@ namespace bronco {
     class connection : private boost::noncopyable {
         public:
             /**
-             * Virtual function used by read_type to handle type
+             * Virtual function used by read_message to handle read
              */
             virtual void handle_read(const boost::system::error_code &error, size_t type) = 0;
+
+            /**
+             * Virtual function used by write_message to handle write
+             */
             virtual void handle_write(const boost::system::error_code &error) = 0;
 
             /**
@@ -37,6 +41,7 @@ namespace bronco {
 
             /**
              * Return socket to use in caller classes
+             * \return Pointer to private socket
              */
             boost::asio::ip::tcp::socket& socket() {
                 return socket_;
@@ -65,6 +70,10 @@ namespace bronco {
                         boost::bind(&connection::handle_write, this, boost::asio::placeholders::error));
             }
 
+            /**
+             * Use protobuf to parse read data into protocol object
+             * \param message protocol object to parse data to
+             */
             template<typename T>
             void deserialize(T &message)
             {
@@ -92,6 +101,8 @@ namespace bronco {
         private:
             boost::asio::io_service &io_;
             boost::asio::ip::tcp::socket socket_;
+            boost::asio::streambuf in_message_;
+            std::string out_message_;
 
             enum { type_header_size = 4, length_header_size = 4 };
             std::vector<char> type_, hex_length_;
@@ -114,17 +125,11 @@ namespace bronco {
             /**
              * Convert header from hex to size_t
              * \param header char array containing header - must support members data() and size()
+             * \return Decimal value of passed header
              */
             size_t convert_header(std::vector<char> &header);
 
-            template<typename T>
-            void serialize(T &message) {
-
-            }
-
         protected:
-            std::string out_message_;
-            boost::asio::streambuf in_message_;
             /**
              * Read type of next message from socket
              */
