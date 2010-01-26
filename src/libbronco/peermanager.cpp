@@ -15,13 +15,11 @@ bronco::peermanager::peermanager(boost::asio::io_service &io)
     in_conn_(peerconnection::create(io_))
 {
     /* Setup configuration */
-    me.set_in_conn_max(1);
+    me.set_in_conn_max(5);
+    me.set_port(port_);
 
     /* Open port for listening */
     listen();
-
-    /* Test by connecting to self */
-    connect_peer("localhost", port_);
 }
 
 void bronco::peermanager::listen()
@@ -41,7 +39,8 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
         in_peers_.push_back(in_conn_);
 
         /* Handle control to connection */
-        in_conn_->handle_peer();
+        std::cout << (in_peers_.size() < me.in_conn_max()) << std::endl;
+        in_conn_->handle_peer(in_peers_.size() < me.in_conn_max());
     }
 
     /* Listen for next incoming connection */
@@ -50,12 +49,12 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
 
-void bronco::peermanager::connect_peer(const std::string &address, const size_t port)
+void bronco::peermanager::connect_peer(const std::string &address, const std::string &port)
 {
     /* Resolve IP and port to an endpoint */
     using boost::asio::ip::tcp;
     tcp::resolver resolver(io_);
-    tcp::resolver::query query(address, utils::to_string(port));
+    tcp::resolver::query query(address, port);
     tcp::resolver::iterator endpoint_it = resolver.resolve(query);
 
     /* Open connection */
@@ -65,4 +64,8 @@ void bronco::peermanager::connect_peer(const std::string &address, const size_t 
 
     /* Save connection */
     out_peers_.push_back(out_conn_);
+}
+
+void bronco::peermanager::connect_peer(const std::string &address, const size_t port) {
+    connect_peer(address, utils::to_string(port));
 }

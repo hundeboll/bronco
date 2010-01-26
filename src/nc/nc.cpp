@@ -23,6 +23,12 @@ int main(int argc, char **argv)
     signal(SIGTERM, close_peer);
 
     bronco::peermanager manager(io);
+
+    if (argc > 1) {
+        std::cout << "Connecting to " << argv[1] << std::endl;
+        manager.connect_peer("localhost", argv[1]);
+    }
+
     io.run();
 
     std::cout << "Bye bye" << std::endl;

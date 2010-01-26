@@ -6,21 +6,28 @@
 
 #include "peerconnection.hpp"
 
-void bronco::peerconnection::handle_peer()
+void bronco::peerconnection::handle_peer(const bool accept)
 {
+    /* Obey peer manager */
+    accept_ = accept;
+
     /* Start reading loop */
     read_type();
 }
 
 void bronco::peerconnection::handle_connect(const boost::system::error_code &error)
 {
-    /* Handshake */
-    protocol::Connect connect;
-    connect.set_peer_hash("connecting peer");
-    write_message(connect);
+    if (!error) {
+        /* Handshake */
+        protocol::Connect connect;
+        connect.set_peer_hash("connecting peer");
+        write_message(connect);
 
-    /* Wait for reply */
-    read_type();
+        /* Wait for reply */
+        read_type();
+    } else {
+        handle_error(error);
+    }
 }
 
 void bronco::peerconnection::handle_write(const boost::system::error_code &error)
@@ -36,8 +43,9 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
     /* Check if error was caused by closing socket */
     if (error == boost::asio::error::eof
             || error == boost::asio::error::connection_reset
-            || error == boost::asio::error::bad_descriptor) {
-        std::cout << "Connection closed" << std::endl;
+            || error == boost::asio::error::bad_descriptor
+            || error == boost::asio::error::broken_pipe) {
+        std::cout << "Connection closed: " << error.message() << std::endl;
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -103,21 +111,36 @@ void bronco::peerconnection::process_type(const size_t type)
 
 void bronco::peerconnection::process_message(const protocol::Connect &connect)
 {
-        std::cout << "Received connect from: " << connect.peer_hash() << std::endl;
+        if (accept_) {
+            std::cout << "Accepting connection from: " << connect.peer_hash() << std::endl;
+            connected_ = true;
+        } else {
+            std::cout << "Rejecting connection from: " << connect.peer_hash() << std::endl;
+        }
 
         protocol::Reply reply;
+        reply.set_busy(!accept_);
         reply.set_peer_hash("accepting peer");
         write_message(reply);
 }
 
 void bronco::peerconnection::process_message(const protocol::Reply &reply)
 {
-        std::cout << "Received reply from: " << reply.peer_hash() << std::endl;
+        if (reply.busy()) {
+            /* Rejected, closing connection */
+            std::cout << "Rejected by " << reply.peer_hash() << std::endl;
+            socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+            socket().close();
+        } else {
+            /* Accepted, proceeding */
+            std::cout << "Accepted by " << reply.peer_hash() << std::endl;
+            connected_ = true;
 
-        /* Send start */
-        protocol::Start start;
-        start.set_peer_hash("connecting peer");
-        write_message(start);
+            /* Send start */
+            protocol::Start start;
+            start.set_peer_hash("connecting peer");
+            write_message(start);
+        }
 }
 
 void bronco::peerconnection::process_message(const protocol::Start &start)
@@ -127,6 +150,7 @@ void bronco::peerconnection::process_message(const protocol::Start &start)
         /* Send data packet */
         protocol::Data data;
         data.set_generation(1);
+        data.set_packet(std::string(6400, '\0'));
         write_message(data);
 }
 
@@ -135,9 +159,7 @@ void bronco::peerconnection::process_message(const protocol::Data &data)
         std::cout << "Received data from generation: " << data.generation() << std::endl;
 
         /* Send stop */
-        protocol::Stop stop;
-        stop.set_peer_hash("connecting peer");
-        write_message(stop);
+        write_message(data);
 }
 
 void bronco::peerconnection::process_message(const protocol::Stop &stop)

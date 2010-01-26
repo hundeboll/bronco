@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+#include "utils.hpp"
 #include "messages.pb.h"
 
 namespace bronco {
@@ -33,7 +34,7 @@ namespace bronco {
             connection(boost::asio::io_service &io)
                 : io_(io),
                 socket_(io),
-                type_(type_header_size),
+                hex_type_(type_header_size),
                 hex_length_(length_header_size)
             {
                 GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -56,7 +57,7 @@ namespace bronco {
             {
                 /* Serialize message */
                 if (!message.SerializeToString(&out_message_)) {
-                    throw std::runtime_error("Failed to serialize object");
+                    throw std::runtime_error("Failed to serialize object of type " + utils::to_string(message.type()));
                 }
 
                 /* Create header with type of message and size of serialized data */
@@ -85,10 +86,11 @@ namespace bronco {
 
                 /* Deserialize */
                 if (!message.ParseFromIstream(&is)) {
-                    throw std::runtime_error("Failed to deserialize object");
+                    throw std::runtime_error("Failed to deserialize object of type " + utils::to_string(type_));
                 }
 
                 /* We are now ready for next message */
+                in_message_.consume(length_);
                 read_type();
             }
 
@@ -104,9 +106,9 @@ namespace bronco {
             boost::asio::streambuf in_message_;
             std::string out_message_;
 
-            enum { type_header_size = 4, length_header_size = 4 };
-            std::vector<char> type_, hex_length_;
-            size_t length_;
+            enum { type_header_size = 4, length_header_size = 8 };
+            std::vector<char> hex_type_, hex_length_;
+            size_t type_, length_;
             std::ostringstream out_header_;
 
             /**

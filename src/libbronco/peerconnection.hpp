@@ -21,7 +21,10 @@ namespace bronco {
              * \param io The io_service to use
              */
             peerconnection(boost::asio::io_service &io)
-                : connection(io)
+                : connection(io),
+                accept_(true),
+                connected_(false),
+                started_(false)
             {}
 
             /**
@@ -34,7 +37,7 @@ namespace bronco {
             }
 
             /* Handle new connections */
-            void handle_peer();
+            void handle_peer(const bool accept);
             void handle_connect(const boost::system::error_code &error);
 
             /* Handle read and write completions */
@@ -50,6 +53,10 @@ namespace bronco {
             void process_message(const protocol::Data &data);
             void process_message(const protocol::Stop &stop);
             void process_message(const protocol::Leave &leave);
+
+        private:
+            /* States */
+            bool accept_, connected_, started_;
     };
 } // namespace bronco
 

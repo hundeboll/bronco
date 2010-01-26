@@ -15,22 +15,11 @@
 namespace bronco {
     class peermanager : private boost::noncopyable {
         public:
-            peermanager(boost::asio::io_service &io);
-
             /**
-             * Determine if a new connection is accepted
-             * \return True if more connections are allowed
+             * Construct manager object to accept and create peer connections
+             * \param io io_service to use
              */
-            bool allow_connection()
-            {
-                if (in_peers_.size() < me.in_conn_max()) {
-                    /* New peer is welcome */
-                    return true;
-                } else {
-                    /* Reject connection */
-                    return false;
-                }
-            }
+            peermanager(boost::asio::io_service &io);
 
             /**
              * Count connected peers
@@ -40,6 +29,13 @@ namespace bronco {
             {
                 return in_peers_.size() + out_peers_.size();
             }
+
+            /** Connect to specified peer
+             * \param address IP-address or hostname of remote peer
+             * \param port Port on remote peer
+             */
+            void connect_peer(const std::string &address, const size_t port);
+            void connect_peer(const std::string &address, const std::string &port);
 
         private:
             size_t port_;
@@ -61,12 +57,6 @@ namespace bronco {
              * \param error Error passed by boost::bind in async_accept
              */
             void handle_incoming(const boost::system::error_code &error);
-
-            /** Connect to specified peer
-             * \param address IP-address or hostname of remote peer
-             * \param port Port on remote peer
-             */
-            void connect_peer(const std::string &address, const size_t port);
 
             /**
              * Select random port
