@@ -78,6 +78,9 @@ namespace bronco {
                 if (!message.ParseFromIstream(&is)) {
                     throw std::runtime_error("Failed to deserialize object");
                 }
+
+                /* We are now ready for next message */
+                read_type();
             }
 
             /**

@@ -33,13 +33,23 @@ namespace bronco {
                 return pointer(new peerconnection(io));
             }
 
+            /* Handle new connections */
             void handle_peer();
-            void handle_read(const boost::system::error_code &error, size_t type);
-            void handle_write(const boost::system::error_code &error);
             void handle_connect(const boost::system::error_code &error);
 
-        private:
+            /* Handle read and write completions */
+            void handle_write(const boost::system::error_code &error);
+            void handle_read(const boost::system::error_code &error, const size_t type);
+            void handle_error(const boost::system::error_code &error);
 
+            /* Methods to process received messages */
+            void process_type(const size_t type);
+            void process_message(const protocol::Connect &connect);
+            void process_message(const protocol::Reply &reply);
+            void process_message(const protocol::Start &start);
+            void process_message(const protocol::Data &data);
+            void process_message(const protocol::Stop &stop);
+            void process_message(const protocol::Leave &leave);
     };
 } // namespace bronco
 
