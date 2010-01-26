@@ -11,13 +11,18 @@ void bronco::peerconnection::handle_peer()
     read_type();
 }
 
-void bronco::peerconnection::handle_read()
-{
-    std::cout << "Message read!" << std::endl;
-}
-
 void bronco::peerconnection::handle_connect(const boost::system::error_code &error)
 {
-    std::cout << "Writing message" << std::endl;
+    out_message_.at(99) = '\0';
     write_message();
+}
+
+void bronco::peerconnection::handle_read(const boost::system::error_code &error)
+{
+    write_message();
+}
+
+void bronco::peerconnection::handle_write(const boost::system::error_code &error)
+{
+    read_type();
 }

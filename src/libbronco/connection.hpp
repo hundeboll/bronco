@@ -18,17 +18,19 @@ namespace bronco {
             /**
              * Virtual function used by read_type to handle type
              */
-            virtual void handle_read() = 0;
+            virtual void handle_read(const boost::system::error_code &error) = 0;
+            virtual void handle_write(const boost::system::error_code &error) = 0;
 
             /**
              * Constructor to create socket and io_service
              * \param io The io_service to use
              */
             connection(boost::asio::io_service &io)
-                : type_(type_header_size),
+                : io_(io),
+                socket_(io),
+                type_(type_header_size),
                 length_(length_header_size),
-                io_(io),
-                socket_(io)
+                out_message_(100, 'a')
             {}
 
             /**
@@ -51,10 +53,12 @@ namespace bronco {
             void read_message(const boost::system::error_code &error);
 
         private:
-            enum { type_header_size = 4, length_header_size = 4 };
-            std::vector<char> type_, length_;
             boost::asio::io_service &io_;
             boost::asio::ip::tcp::socket socket_;
+
+            enum { type_header_size = 4, length_header_size = 4 };
+            std::vector<char> type_, length_;
+            std::ostringstream out_header_;
 
             /**
              * Create header containing size and type of payload
@@ -62,14 +66,21 @@ namespace bronco {
              * \param size Size of message
              * \param header Resulting header
              */
-            void make_header(protocol::packettype type, size_t size, std::string &header);
+            void make_header(protocol::packettype type, size_t size);
 
             /**
              * Read size of next message from socket
              */
-            void read_size(const boost::system::error_code &error);
+            void read_length(const boost::system::error_code &error);
+
+            /**
+             * Convert header from hex to size_t
+             * \param header char array containing header - must support members data() and size()
+             */
+            size_t convert_header(std::vector<char> &header);
 
         protected:
+            std::vector<char> in_message_, out_message_;
             /**
              * Read type of next message from socket
              */

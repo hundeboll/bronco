@@ -56,7 +56,10 @@ void peermanager::connect_peer(const std::string &address, const size_t port)
     tcp::resolver::iterator endpoint_it = resolver.resolve(query);
 
     /* Open connection */
-    in_conn_ = peerconnection::create(io_);
-    in_conn_->socket().async_connect(*endpoint_it,
-            boost::bind(&peerconnection::handle_connect, in_conn_, boost::asio::placeholders::error));
+    out_conn_ = peerconnection::create(io_);
+    out_conn_->socket().async_connect(*endpoint_it,
+            boost::bind(&peerconnection::handle_connect, out_conn_, boost::asio::placeholders::error));
+
+    /* Save connection */
+    peers_.push_back(out_conn_);
 }

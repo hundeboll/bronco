@@ -8,11 +8,12 @@
 #include <iostream>
 #include "peermanager.hpp"
 
+boost::asio::io_service io;
+
 void close_peer(int signo)
 {
     /* Handle shutdown */
-    std::cout << "Bye bye" << std::endl;
-    exit(EXIT_SUCCESS);
+    io.stop();
 }
 
 int main(int argc, char **argv)
@@ -20,9 +21,10 @@ int main(int argc, char **argv)
     /* Catch signals */
     signal(SIGINT, close_peer);
 
-    boost::asio::io_service io;
     bronco::peermanager manager(io);
     io.run();
+
+    std::cout << "Bye bye" << std::endl;
 
     return 0;
 }
