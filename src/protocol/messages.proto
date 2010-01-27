@@ -1,0 +1,81 @@
+package protocol;
+
+enum packettype
+{
+    peertype = 0;
+    configtype = 1;
+    peerstype = 2;
+    connecttype = 3;
+    replytype = 4;
+    leavetype = 5;
+    datatype = 6;
+    starttype = 7;
+    stoptype = 8;
+    keepalivetype = 9;
+}
+
+message Peer {
+    optional string address = 1;
+    optional string peer_hash = 2;
+    optional uint32 port = 3;
+    optional bool complete = 4;
+    optional uint32 in_conn_max = 5;
+    optional uint32 out_conn_max = 6;
+    optional uint32 spare_peers = 7;
+    optional packettype type = 15 [default = peertype];
+}
+
+message Config {
+    optional uint32 generation_size = 1;
+    optional uint32 generation_count = 2;
+    optional uint32 packet_size = 3;
+    optional uint32 file_size = 4;
+    optional string file_name = 5;
+    optional string file_hash = 6;
+    optional packettype type = 15 [default = configtype];
+}
+
+message Peers {
+    repeated Peer peers = 1;
+    optional packettype type = 15 [default = peerstype];
+}
+
+message Connect {
+    optional string peer_hash = 1;
+    optional string file_hash = 2;
+    optional packettype type = 15 [default = connecttype];
+}
+
+message Reply {
+    optional string peer_hash = 1;
+    optional bool busy = 2;
+    optional bool complete = 3;
+    optional packettype type = 15 [default = replytype];
+}
+
+message Leave {
+    optional string peer_hash = 1;
+    optional packettype type = 15 [default = leavetype];
+}
+
+message Data {
+    optional bytes packet = 1;
+    optional bytes vector = 2;
+    optional uint32 generation = 3;
+    optional packettype type = 15 [default = datatype];
+}
+
+message Start {
+    optional string peer_hash = 1;
+    optional packettype type = 15 [default = starttype];
+}
+
+message Stop {
+    optional string peer_hash = 1;
+    optional packettype type = 15 [default = stoptype];
+}
+
+message Keepalive {
+    optional string peer_hash = 1;
+    optional packettype type = 15 [default = keepalivetype];
+}
