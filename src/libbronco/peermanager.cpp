@@ -12,11 +12,14 @@ boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
 boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(uint16_t port)
-    : port_(port),
+bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...))
+    : bprint(f),
+    port_(port),
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     stop_(false)
 {
+    PRINTF("Starting BRONCO\n");
+
     /* Setup configuration */
     me.set_in_conn_max(5);
     me.set_port(port_);
@@ -69,7 +72,7 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
         in_peers_.push_back(in_conn_);
 
         /* Handle control to connection */
-        in_conn_->handle_peer(in_peers_.size() < me.in_conn_max());
+        in_conn_->handle_peer(in_peers_.size() <= me.in_conn_max());
     }
 
     /* Listen for next incoming connection */

@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <inttypes.h>
 #include <cstdlib>
+#include <cstdarg>
+#include <cstdio>
 #include <iostream>
 #include "peermanager.hpp"
 
@@ -18,6 +20,15 @@ uint16_t select_port()
     return (rand() % 1024) + 49151;
 }
 
+int myprintf(const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    int ret = vprintf(format, ap);
+    va_end(ap);
+
+    return ret;
+}
+
 int main(int argc, char **argv)
 {
     /* Catch signals */
@@ -25,6 +36,7 @@ int main(int argc, char **argv)
     signal(SIGTERM, bronco::peermanager::close);
 
     bronco::peermanager manager(select_port());
+    manager.set_print(&myprintf);
 
     if (argc > 1) {
         std::cout << "Connecting to " << argv[1] << std::endl;

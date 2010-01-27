@@ -3,6 +3,8 @@
 #ifndef _PEERMANAGER_H
 #define _PERRMANAGER_H
 
+#define PRINTF (*bprint)
+
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -12,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <inttypes.h>
+#include <cstdio>
 
 #include "peerconnection.hpp"
 #include "serverconnection.hpp"
@@ -20,12 +23,13 @@ namespace bronco {
     class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
         public:
             typedef boost::shared_ptr<peermanager> pointer;
+            int (*bprint)(const char *format, ...);
 
             /**
              * Construct manager object to accept and create peer connections
              * \param port Port to listen for peer connections on
              */
-            peermanager(uint16_t port);
+            peermanager(uint16_t port, int (*f)(const char *format, ...) = &printf);
 
             /**
              * Unlock mutex and stop threads before closing
@@ -50,6 +54,11 @@ namespace bronco {
             static void close(int signo)
             {
                 io_.stop();
+            }
+
+            void set_print(int (*f)(const char *format, ...))
+            {
+                bprint = f;
             }
 
             /**
