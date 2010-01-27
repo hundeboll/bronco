@@ -49,6 +49,7 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
         /* Closing socket properly */
         close_socket();
         std::cout << "Connection closed: " << error.message() << std::endl;
+        manager_->update_connections();
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -133,6 +134,7 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
             /* Rejected, closing connection */
             std::cout << "Rejected by " << reply.peer_hash() << std::endl;
             close_socket();
+            manager_->update_connections();
         } else {
             /* Accepted, proceeding */
             std::cout << "Accepted by " << reply.peer_hash() << std::endl;
@@ -180,4 +182,5 @@ void bronco::peerconnection::process_message(const protocol::Leave &leave)
 
         /* Close socket */
         close_socket();
+        manager_->update_connections();
 }

@@ -6,6 +6,8 @@
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include <string>
 #include <vector>
@@ -26,12 +28,20 @@ namespace bronco {
             peermanager(boost::asio::io_service &io);
 
             /**
+             * Unlock mutex before closing
+             */
+            ~peermanager()
+            {
+                stop_ = true;
+                update_cond_.notify_all();
+            }
+
+            /**
              * Wrapper to update connections
              */
             void update_connections()
             {
-                update_connections(in_peers_);
-                update_connections(out_peers_);
+                update_cond_.notify_one();
             }
 
             /** Connect to specified peer
@@ -42,6 +52,7 @@ namespace bronco {
             void connect_peer(const std::string &address, const std::string &port);
 
         private:
+            /* Connection */
             size_t port_;
             std::vector<peerconnection::pointer> in_peers_, out_peers_;
             boost::asio::io_service &io_;
@@ -49,6 +60,17 @@ namespace bronco {
             peerconnection::pointer out_conn_, in_conn_;
             serverconnection::pointer server_ptr_;
             protocol::Peer me;
+
+            /* Thread */
+            bool stop_;
+            typedef boost::mutex::scoped_lock scoped_lock;
+            static boost::mutex update_mutex_;
+            static boost::condition_variable update_cond_;
+
+            /**
+             * Clean up closed connections and create new if needed
+             */
+            void updater();
 
             /**
              * Accept incoming connections

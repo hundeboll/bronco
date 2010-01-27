@@ -13,6 +13,7 @@
 
 
 namespace bronco {
+    class peermanager;
     class peerconnection : public connection, public boost::enable_shared_from_this<peerconnection> {
         public:
             typedef boost::shared_ptr<peerconnection> pointer;
@@ -21,20 +22,21 @@ namespace bronco {
              * Constructor to construct base class
              * \param io The io_service to use
              */
-            peerconnection(boost::asio::io_service &io)
+            peerconnection(boost::asio::io_service &io, peermanager *manager)
                 : connection(io),
                 accept_(true),
                 connected_(false),
-                started_(false)
+                started_(false),
+                manager_(manager)
             {}
 
             /**
              * Create new connection object
              * \param io io_service to use
              */
-            static pointer create(boost::asio::io_service &io)
+            static pointer create(boost::asio::io_service &io, peermanager *manager)
             {
-                return pointer(new peerconnection(io));
+                return pointer(new peerconnection(io, manager));
             }
 
             /* Handle new connections */
@@ -58,6 +60,7 @@ namespace bronco {
         private:
             /* States */
             bool accept_, connected_, started_;
+            peermanager *manager_;
     };
 } // namespace bronco
 

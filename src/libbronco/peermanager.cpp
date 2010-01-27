@@ -7,12 +7,15 @@
 #include "peermanager.hpp"
 #include "utils.hpp"
 
+/* Initialize statics */
+boost::mutex bronco::peermanager::update_mutex_;
+boost::condition_variable bronco::peermanager::update_cond_;
+
 bronco::peermanager::peermanager(boost::asio::io_service &io)
     : port_(select_port()),
     io_(io),
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
-    out_conn_(peerconnection::create(io_)),
-    in_conn_(peerconnection::create(io_))
+    stop_(false)
 {
     /* Setup configuration */
     me.set_in_conn_max(5);
@@ -20,6 +23,32 @@ bronco::peermanager::peermanager(boost::asio::io_service &io)
 
     /* Open port for listening */
     listen();
+
+    /* Collect garbage */
+    boost::thread t(boost::bind(&peermanager::updater, this));
+}
+
+void bronco::peermanager::updater()
+{
+    while (!stop_) {
+        /* Wait for closed connections */
+        scoped_lock lock(update_mutex_);
+        update_cond_.wait(lock);
+
+        if (stop_)
+            break;
+
+        /* Clean up */
+        update_connections(in_peers_);
+        update_connections(out_peers_);
+
+        /* Connect to more if needed */
+        if (out_peers_.size() < me.out_conn_max()) {
+            /* Request peers in server connection */
+
+            /* Connect to received peers */
+        }
+    }
 }
 
 void bronco::peermanager::listen()
@@ -27,6 +56,7 @@ void bronco::peermanager::listen()
     std::cout << "Listening on port " << port_ << std::endl;
 
     /* Initiate accepting loop */
+    in_conn_ = peerconnection::create(io_, this);
     acceptor_.async_accept(in_conn_->socket(),
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
@@ -39,11 +69,11 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
         in_peers_.push_back(in_conn_);
 
         /* Handle control to connection */
-        in_conn_->handle_peer(update_connections(in_peers_) < me.in_conn_max());
+        in_conn_->handle_peer(in_peers_.size() < me.in_conn_max());
     }
 
     /* Listen for next incoming connection */
-    in_conn_ = peerconnection::create(io_);
+    in_conn_ = peerconnection::create(io_, this);
     acceptor_.async_accept(in_conn_->socket(),
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
@@ -57,7 +87,7 @@ void bronco::peermanager::connect_peer(const std::string &address, const std::st
     tcp::resolver::iterator endpoint_it = resolver.resolve(query);
 
     /* Open connection */
-    out_conn_ = peerconnection::create(io_);
+    out_conn_ = peerconnection::create(io_, this);
     out_conn_->socket().async_connect(*endpoint_it,
             boost::bind(&peerconnection::handle_connect, out_conn_, boost::asio::placeholders::error));
 
