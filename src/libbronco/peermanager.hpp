@@ -23,12 +23,12 @@ namespace bronco {
 
             /**
              * Construct manager object to accept and create peer connections
-             * \param io io_service to use
+             * \param port Port to listen for peer connections on
              */
             peermanager(uint16_t port);
 
             /**
-             * Unlock mutex before closing
+             * Unlock mutex and stop threads before closing
              */
             ~peermanager()
             {
@@ -51,8 +51,6 @@ namespace bronco {
             {
                 io_.stop();
             }
-
-            void set_print(
 
             /**
              * Wrapper to update connections
