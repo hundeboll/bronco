@@ -25,7 +25,7 @@ namespace bronco {
              * Construct manager object to accept and create peer connections
              * \param io io_service to use
              */
-            peermanager(boost::asio::io_service &io);
+            peermanager(uint16_t port);
 
             /**
              * Unlock mutex before closing
@@ -35,6 +35,24 @@ namespace bronco {
                 stop_ = true;
                 update_cond_.notify_all();
             }
+
+            /**
+             * Wrapper to io_service::run()
+             */
+            void run()
+            {
+                io_.run();
+            }
+
+            /**
+             * Stop io services to close object
+             */
+            static void close(int signo)
+            {
+                io_.stop();
+            }
+
+            void set_print(
 
             /**
              * Wrapper to update connections
@@ -48,14 +66,14 @@ namespace bronco {
              * \param address IP-address or hostname of remote peer
              * \param port Port on remote peer
              */
-            void connect_peer(const std::string &address, const size_t port);
+            void connect_peer(const std::string &address, const uint16_t port);
             void connect_peer(const std::string &address, const std::string &port);
 
         private:
             /* Connection */
-            size_t port_;
+            uint16_t port_;
             std::vector<peerconnection::pointer> in_peers_, out_peers_;
-            boost::asio::io_service &io_;
+            static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             peerconnection::pointer out_conn_, in_conn_;
             serverconnection::pointer server_ptr_;
@@ -89,16 +107,6 @@ namespace bronco {
              * \param peers Vector with connections to update
              */
             size_t update_connections(std::vector<peerconnection::pointer> &peers);
-
-            /**
-             * Select random port
-             * \return Selected port
-             */
-            size_t select_port()
-            {
-                srand(time(0));
-                return (rand() % 1024) + 49151;
-            }
 
     };
 } // namespace bronco

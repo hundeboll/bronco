@@ -10,10 +10,10 @@
 /* Initialize statics */
 boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
+boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(boost::asio::io_service &io)
-    : port_(select_port()),
-    io_(io),
+bronco::peermanager::peermanager(uint16_t port)
+    : port_(port),
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     stop_(false)
 {
@@ -95,7 +95,7 @@ void bronco::peermanager::connect_peer(const std::string &address, const std::st
     out_peers_.push_back(out_conn_);
 }
 
-void bronco::peermanager::connect_peer(const std::string &address, const size_t port)
+void bronco::peermanager::connect_peer(const std::string &address, const uint16_t port)
 {
     /* Wrap port */
     connect_peer(address, utils::to_string(port));
