@@ -43,10 +43,18 @@ namespace bronco {
             void leave(std::string &peer_hash);
 
             /**
-             * Start communication with server when connected
-             * \param Possible error occurring in connect operation
+             * Start communication with server to announce new file when connected
+             * \param error Possible error occurring in connect operation
+             * \param announce Announce message
              */
-            void handle_connect(const boost::system::error_code &error);
+            void handle_announce(const boost::system::error_code &error, const protocol::Announce &announce);
+
+            /**
+             * Start communication with server to join network when connected
+             * \param error Possible error occurring in connect operation
+             * \param me Information about the joining peer
+             */
+            void handle_connect(const boost::system::error_code &error, const protocol::Peer &me);
 
         private:
             /** Virtual function in connection called when async read operations completes

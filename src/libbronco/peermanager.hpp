@@ -84,7 +84,7 @@ namespace bronco {
             boost::asio::ip::tcp::acceptor acceptor_;
             peerconnection::pointer out_conn_, in_conn_;
             serverconnection::pointer server_conn_;
-            protocol::Peer me;
+            protocol::Peer me_;
 
             /* Thread */
             bool stop_;
@@ -116,7 +116,7 @@ namespace bronco {
             size_t update_connections(std::vector<peerconnection::pointer> &peers);
 
             /**
-             * Connect to server to join netowkr
+             * Connect to server to join network
              * \param address Address or hostname of server
              * \param port Port of server
              */
@@ -126,6 +126,11 @@ namespace bronco {
              * Wrap uint port to std string
              */
             void connect_server(const std::string &address, const uint16_t port);
+
+            /**
+             * Connect to server and announce new file
+             */
+            void announce_server(const std::string &adress, const std::string port, const protocol::Announce &announce);
 
     };
 } // namespace bronco

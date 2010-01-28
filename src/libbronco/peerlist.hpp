@@ -5,7 +5,9 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
+
 #include <cstdlib>
+#include <iostream>
 
 #include "messages.pb.h"
 
@@ -34,6 +36,8 @@ namespace bronco {
 
                 list_entry entry(peer.peer_hash(), list_peer(peer, time(0)));
                 peers_.insert(entry);
+
+                std::cout << "Inserted peer " << peer.peer_hash() << " into list " << list_hash_ << std::endl;
             }
 
             /**

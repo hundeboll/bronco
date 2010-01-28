@@ -2,14 +2,23 @@
 
 #include "serverconnection.hpp"
 
-void bronco::serverconnection::handle_connect(const boost::system::error_code &error)
+void bronco::serverconnection::handle_announce(const boost::system::error_code &error, const protocol::Announce &announce)
 {
     std::cout << "Connected to server" << std::endl;
 
     /* Send join request */
-    protocol::Peer peer;
-    peer.set_peer_hash("Connection peer");
-    write_message(peer);
+    write_message(announce);
+
+    /* Wait for reply */
+    read_type();
+}
+
+void bronco::serverconnection::handle_connect(const boost::system::error_code &error, const protocol::Peer &me)
+{
+    std::cout << "Connected to server" << std::endl;
+
+    /* Send join request */
+    write_message(me);
 
     /* Wait for reply */
     read_type();
@@ -80,7 +89,7 @@ void bronco::serverconnection::process_type(const size_t type)
 
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
-
+    std::cout << "Received confirmation on announce" << std::endl;
 }
 
 void bronco::serverconnection::process_message(const protocol::Config &config)

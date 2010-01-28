@@ -8,18 +8,14 @@
 
 void bronco::connection::read_message(const boost::system::error_code &error)
 {
-    if (!error) {
-        /* Save length and type in decimal */
-        length_ = convert_header(hex_length_);
-        type_ = convert_header(hex_type_);
+    /* Save length and type in decimal */
+    length_ = convert_header(hex_length_);
+    type_ = convert_header(hex_type_);
 
-        /* Read message */
-        boost::asio::async_read(socket_,
-                in_message_.prepare(length_),
-                boost::bind(&connection::handle_read, this, boost::asio::placeholders::error, type_));
-    } else {
-        throw std::runtime_error(error.message());
-    }
+    /* Read message */
+    boost::asio::async_read(socket_,
+            in_message_.prepare(length_),
+            boost::bind(&connection::handle_read, this, boost::asio::placeholders::error, type_));
 }
 
 void bronco::connection::make_header(protocol::packettype type, size_t size)
@@ -28,7 +24,7 @@ void bronco::connection::make_header(protocol::packettype type, size_t size)
     out_header_.seekp(std::iostream::beg);
 
     /* Set packet type */
-    out_header_ << std::setw(type_header_size) << type;
+    out_header_ << std::setw(type_header_size) << std::hex << type;
 
     /* Set stream field width to header_length and input data in hex */
     out_header_ << std::setw(length_header_size) << std::hex << size;
@@ -44,14 +40,10 @@ void bronco::connection::read_type()
 
 void bronco::connection::read_length(const boost::system::error_code &error)
 {
-    if (!error) {
-        /* Read length_header_size into hex_length_ and call read_message */
-        boost::asio::async_read(socket_,
-                boost::asio::buffer(hex_length_, length_header_size),
-                boost::bind(&connection::read_message, this, boost::asio::placeholders::error));
-    } else {
-        throw std::runtime_error(error.message());
-    }
+    /* Read length_header_size into hex_length_ and call read_message */
+    boost::asio::async_read(socket_,
+            boost::asio::buffer(hex_length_, length_header_size),
+            boost::bind(&connection::read_message, this, boost::asio::placeholders::error));
 }
 
 size_t bronco::connection::convert_header(std::vector<char> &header)

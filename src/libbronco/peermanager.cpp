@@ -22,8 +22,8 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
     PRINTF("Starting BRONCO\n");
 
     /* Setup configuration */
-    me.set_in_conn_max(5);
-    me.set_port(port_);
+    me_.set_in_conn_max(5);
+    me_.set_port(port_);
 
     /* Open port for listening */
     listen();
@@ -31,10 +31,13 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
     /* Collect garbage */
     boost::thread t(boost::bind(&peermanager::updater, this));
 
-    /* Join network */
+    /* TEST: Join network */
     std::string server_address("127.0.0.1");
-    uint16_t server_port(60100);
-    connect_server(server_address, server_port);
+    std::string server_port("60100");
+    protocol::Announce announce;
+    announce.set_file_hash("File_Hash_No_Two");
+    announce.set_peer_hash("Peer_Hash_No_One");
+    announce_server(server_address, server_port, announce);
 }
 
 void bronco::peermanager::updater()
@@ -52,7 +55,7 @@ void bronco::peermanager::updater()
         update_connections(out_peers_);
 
         /* Connect to more if needed */
-        if (out_peers_.size() < me.out_conn_max()) {
+        if (out_peers_.size() < me_.out_conn_max()) {
             /* Request peers in server connection */
 
             /* Connect to received peers */
@@ -78,7 +81,7 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
         in_peers_.push_back(in_conn_);
 
         /* Handle control to connection */
-        in_conn_->handle_peer(in_peers_.size() <= me.in_conn_max());
+        in_conn_->handle_peer(in_peers_.size() <= me_.in_conn_max());
     }
 
     /* Listen for next incoming connection */
@@ -139,5 +142,17 @@ void bronco::peermanager::connect_server(const std::string &address, const std::
     tcp::resolver::iterator endpoint_it = resolver.resolve(query);
 
     server_conn_->socket().async_connect(*endpoint_it,
-            boost::bind(&serverconnection::handle_connect, server_conn_, boost::asio::placeholders::error));
+            boost::bind(&serverconnection::handle_connect, server_conn_, boost::asio::placeholders::error, me_));
+}
+
+void bronco::peermanager::announce_server(const std::string &address, const std::string port, const protocol::Announce &announce)
+{
+    /* Resolve IP and port to an endpoint */
+    using boost::asio::ip::tcp;
+    tcp::resolver resolver(io_);
+    tcp::resolver::query query(address, port);
+    tcp::resolver::iterator endpoint_it = resolver.resolve(query);
+
+    server_conn_->socket().async_connect(*endpoint_it,
+            boost::bind(&serverconnection::handle_announce, server_conn_, boost::asio::placeholders::error, announce));
 }
