@@ -1,13 +1,18 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
+#ifndef _CLIENTCONNECTION_H
+#define _CLIENTCONNECTION_H
+
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 
 #include "connection.hpp"
+#include "peerlist.hpp"
 
 namespace bronco {
+    class server;
     class clientconnection : public connection, public boost::enable_shared_from_this<clientconnection> {
         public:
             typedef boost::shared_ptr<clientconnection> pointer;
@@ -17,9 +22,9 @@ namespace bronco {
              * \param io io service to use
              * \return Boost shared pointer to created object
              */
-            static pointer create(boost::asio::io_service &io)
+            static pointer create(boost::asio::io_service &io, server *srv)
             {
-                return pointer(new clientconnection(io));
+                return pointer(new clientconnection(io, srv));
             }
 
             /**
@@ -28,6 +33,18 @@ namespace bronco {
             void handle_client();
 
         private:
+            server *srv_;
+            peerlist::pointer peerlist_;
+
+            /**
+             * Private constructor used by ::create
+             * \param io io service to use in connection
+             */
+            clientconnection(boost::asio::io_service &io, server *srv)
+                : connection(io),
+                srv_(srv)
+            {}
+
             /**
              * Virtual function in connection called when async write operations completes
              * \param error Possible error occurred in operation
@@ -38,14 +55,6 @@ namespace bronco {
              * \param error Possivle error occurred in operation
              */
             void handle_read(const boost::system::error_code &error, const size_t type);
-
-            /**
-             * Private constructor used by ::create
-             * \param io io service to use in connection
-             */
-            clientconnection(boost::asio::io_service &io)
-                : connection(io)
-            {}
 
             /**
              * Checks if error is acceptable or throws exception
@@ -66,3 +75,5 @@ namespace bronco {
             void process_message(const protocol::Leave &leave);
     };
 }
+
+#endif

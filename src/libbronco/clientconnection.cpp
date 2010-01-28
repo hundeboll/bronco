@@ -1,6 +1,7 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
 #include "clientconnection.hpp"
+#include "server.hpp"
 
 void bronco::clientconnection::handle_read(const boost::system::error_code &error, const size_t type)
 {
@@ -80,6 +81,9 @@ void bronco::clientconnection::process_type(const size_t type)
 void bronco::clientconnection::process_message(const protocol::Announce &announce)
 {
     /* Create new file manager */
+    peerlist_ = srv_->new_peerlist(announce);
+
+    /* Return new list hash */
 }
 
 void bronco::clientconnection::process_message(const protocol::Peer &peer)

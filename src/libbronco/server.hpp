@@ -1,11 +1,16 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
+#ifndef _SERVER_H
+#define _SERVER_H
+
 #include <boost/noncopyable.hpp>
 
 #include <string>
+#include <vector>
+#include <map>
 
 #include "clientconnection.hpp"
-#include "messages.pb.cc"
+#include "peerlist.hpp"
 
 namespace bronco {
     class server : private boost::noncopyable {
@@ -33,13 +38,31 @@ namespace bronco {
                 io_.stop();
             }
 
+            /**
+             * Create new peerlist
+             */
+            peerlist::pointer new_peerlist(const protocol::Announce &announce)
+            {
+                /* Create peerlist */
+                peerlist::pointer pl(new peerlist(announce));
+
+                /* Save peerlist */
+                peerlists_.insert(std::pair<std::string, peerlist::pointer>(pl->list_hash(), pl));
+
+                return pl;
+            }
+
         private:
+            /* Members used in connection */
             std::string address_;
             uint16_t port_;
             static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             clientconnection::pointer conn_;
             std::vector<clientconnection::pointer> conn_list_;
+
+            /* Members used for file management / peer management */
+            std::map<std::string, peerlist::pointer> peerlists_;
 
             /**
              * Recursive function called when clients connect
@@ -49,3 +72,4 @@ namespace bronco {
     };
 } // Namespace bronco
 
+#endif
