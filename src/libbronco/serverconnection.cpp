@@ -51,11 +51,17 @@ void bronco::serverconnection::handle_error(const boost::system::error_code &err
 
 void bronco::serverconnection::process_type(const size_t type)
 {
+    protocol::Confirm confirm;
     protocol::Config config;
     protocol::Peers peers;
 
     /* Perform operation determined by message type */
     switch (type) {
+        case protocol::confirmtype:
+            deserialize(confirm);
+            process_message(confirm);
+            break;
+
         case protocol::configtype:
             deserialize(config);
             process_message(config);
@@ -70,6 +76,11 @@ void bronco::serverconnection::process_type(const size_t type)
             throw std::runtime_error("Unknown message type received");
             break;
     }
+}
+
+void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
+{
+
 }
 
 void bronco::serverconnection::process_message(const protocol::Config &config)

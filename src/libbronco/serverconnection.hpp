@@ -73,6 +73,7 @@ namespace bronco {
             void process_type(const size_t type);
 
             /* Message processing */
+            void process_message(const protocol::Confirm &confirm);
             void process_message(const protocol::Config &config);
             void process_message(const protocol::Peers &peers);
     };

@@ -85,7 +85,7 @@ message Keepalive {
 message Announce {
     optional string peer_hash = 1;
     optional string peer_address = 2;
-    optional string peer_port = 3;
+    optional uint32 peer_port = 3;
     optional string file_name = 4;
     optional uint32 file_size = 5;
     optional string file_hash = 6;

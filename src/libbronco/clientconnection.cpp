@@ -83,7 +83,18 @@ void bronco::clientconnection::process_message(const protocol::Announce &announc
     /* Create new file manager */
     peerlist_ = srv_->new_peerlist(announce);
 
+    /* Assign peer to new list */
+    protocol::Peer peer;
+    peer.set_address(announce.peer_address());
+    peer.set_port(announce.peer_port());
+    peer.set_peer_hash(announce.peer_hash());
+    peer.set_complete(true);
+    peerlist_->assign(peer);
+
     /* Return new list hash */
+    protocol::Confirm confirm;
+    confirm.set_list_hash(peerlist_->list_hash());
+    write_message(confirm);
 }
 
 void bronco::clientconnection::process_message(const protocol::Peer &peer)
