@@ -49,7 +49,7 @@ protocol::Peers bronco::peerlist::get_random_peers(const size_t no)
     /* Selecting random peers from peers_ */
     protocol::Peers peers;
     std::map<std::string, const_it> selected;
-    while (selected.size() <= no)
+    while (selected.size() < no)
     {
         const_it beg;
         std::advance(beg, rand() % max);
