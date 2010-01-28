@@ -18,13 +18,24 @@ namespace bronco {
                 return pointer(new clientconnection(io));
             }
 
+            /* Called from server.hpp */
+            void handle_client();
+
         private:
             clientconnection(boost::asio::io_service &io)
                 : connection(io)
             {}
 
+            /* Virtuals in connection.hpp */
             void handle_write(const boost::system::error_code &error);
             void handle_read(const boost::system::error_code &error, const size_t type);
             void handle_error(const boost::system::error_code &error);
+
+            /* Process read messages */
+            void process_type(const size_t type);
+            void process_message(const protocol::Announce &announce);
+            void process_message(const protocol::Peer &peer);
+            void process_message(const protocol::Keepalive &keepalive);
+            void process_message(const protocol::Leave &leave);
     };
 }

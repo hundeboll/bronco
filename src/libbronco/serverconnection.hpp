@@ -34,6 +34,15 @@ namespace bronco {
              */
             void leave(std::string &peer_hash);
 
+        private:
+            void handle_read(const boost::system::error_code &error, const size_t type);
+            void handle_write(const boost::system::error_code &error);
+            void handle_error(const boost::system::error_code &error);
+
+            /* Process read messages */
+            void process_type(const size_t type);
+            void process_message(const protocol::Config &config);
+            void process_message(const protocol::Peers &peers);
     };
 } // namespace bronco
 

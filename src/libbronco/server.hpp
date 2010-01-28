@@ -10,12 +10,33 @@
 namespace bronco {
     class server : private boost::noncopyable {
         public:
+            /**
+             * Start server object
+             * \param address Address of local interface to bind to
+             * \param port TCP port to listen on
+             */
             server(std::string &address, uint16_t port);
+
+            /**
+             * Tell io_service to listen for connections
+             */
+            void run()
+            {
+                io_.run();
+            }
+
+            /**
+             * Stop io_service to close opbject
+             */
+            static void stop(int signo)
+            {
+                io_.stop();
+            }
 
         private:
             std::string address_;
             uint16_t port_;
-            boost::asio::io_service io_;
+            static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             clientconnection::pointer conn_;
 

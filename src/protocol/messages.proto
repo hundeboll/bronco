@@ -12,6 +12,7 @@ enum packettype
     starttype = 7;
     stoptype = 8;
     keepalivetype = 9;
+    announcetype = 10;
 }
 
 message Peer {
@@ -78,4 +79,17 @@ message Stop {
 message Keepalive {
     optional string peer_hash = 1;
     optional packettype type = 15 [default = keepalivetype];
+}
+
+message Announce {
+    optional string peer_hash = 1;
+    optional string peer_address = 2;
+    optional string peer_port = 3;
+    optional string file_name = 4;
+    optional uint32 file_size = 5;
+    optional string file_hash = 6;
+    optional uint32 generation_size = 7;
+    optional uint32 generation_count = 8;
+    optional uint32 packet_size = 9;
+    optional packettype type = 15 [default = announcetype];
 }
