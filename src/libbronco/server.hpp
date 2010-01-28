@@ -39,7 +39,12 @@ namespace bronco {
             static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             clientconnection::pointer conn_;
+            std::vector<clientconnection::pointer> conn_list_;
 
+            /**
+             * Recursive function called when clients connect
+             * \param error Possible error occurred in accept operation
+             */
             void handle_incoming(const boost::system::error_code &error);
     };
 } // Namespace bronco

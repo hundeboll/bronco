@@ -2,7 +2,7 @@
 
 #include "clientconnection.hpp"
 
-void bronco::clientconnection::handle_read(const boost::system::error_code &error, size_t type)
+void bronco::clientconnection::handle_read(const boost::system::error_code &error, const size_t type)
 {
     /* Check if read operation resulted in error */
     if (!error) {
@@ -38,6 +38,7 @@ void bronco::clientconnection::handle_error(const boost::system::error_code &err
 
 void bronco::clientconnection::handle_client()
 {
+    /* Receive message */
     read_type();
 }
 
@@ -78,21 +79,21 @@ void bronco::clientconnection::process_type(const size_t type)
 
 void bronco::clientconnection::process_message(const protocol::Announce &announce)
 {
-
+    /* Create new file manager */
 }
 
 void bronco::clientconnection::process_message(const protocol::Peer &peer)
 {
-
+    /* Fetch right file manager and return list of peers */
 }
 
 void bronco::clientconnection::process_message(const protocol::Keepalive &keepalive)
 {
-
+    /* Update time stamp of transmitting peer */
 }
 
 void bronco::clientconnection::process_message(const protocol::Leave &leave)
 {
-
+    /* Remove peer from list */
 }
 

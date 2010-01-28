@@ -8,13 +8,14 @@
 
 int main(int argc, char **argv)
 {
+    /* Setup signal handlers */
     signal(SIGTERM, bronco::server::stop);
     signal(SIGINT, bronco::server::stop);
 
-    /* Start server */
     std::string address("127.0.0.1");
     uint16_t port(60100);
 
+    /* Start server */
     bronco::server s(address, port);
     s.run();
 

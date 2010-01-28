@@ -22,6 +22,7 @@ void bronco::server::handle_incoming(const boost::system::error_code &error)
     if (!error) {
         /* Handle control to client connection */
         conn_->handle_client();
+        conn_list_.push_back(conn_);
     }
 
     /* Listen for next incoming */

@@ -20,7 +20,7 @@ namespace bronco {
             /**
              * Virtual function used by read_message to handle read
              */
-            virtual void handle_read(const boost::system::error_code &error, size_t type) = 0;
+            virtual void handle_read(const boost::system::error_code &error, const size_t type) = 0;
 
             /**
              * Virtual function used by write_message to handle write

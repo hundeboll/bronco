@@ -17,6 +17,14 @@ namespace bronco {
             typedef boost::shared_ptr<serverconnection> pointer;
 
             /**
+             * Create connection object to server
+             * \param io io service to use in connection
+             */
+            serverconnection(boost::asio::io_service &io)
+                : connection(io)
+            {}
+
+            /**
              * \brief Request more peers from server
              * \param num The number of peers  to reuqest
              */
@@ -34,13 +42,37 @@ namespace bronco {
              */
             void leave(std::string &peer_hash);
 
+            /**
+             * Start communication with server when connected
+             * \param Possible error occurring in connect operation
+             */
+            void handle_connect(const boost::system::error_code &error);
+
         private:
+            /** Virtual function in connection called when async read operations completes
+             * \param error Possivle error occurred in operation
+             */
             void handle_read(const boost::system::error_code &error, const size_t type);
+
+            /**
+             * Virtual function in connection called when async write operations completes
+             * \param error Possible error occurred in operation
+             */
             void handle_write(const boost::system::error_code &error);
+
+            /**
+             * Checks if error is acceptable or throws exception
+             * \param error Error occuring in async read and write operations
+             */
             void handle_error(const boost::system::error_code &error);
 
-            /* Process read messages */
+            /**
+             * Process read data based on message type
+             * \param Message type read from header
+             */
             void process_type(const size_t type);
+
+            /* Message processing */
             void process_message(const protocol::Config &config);
             void process_message(const protocol::Peers &peers);
     };
