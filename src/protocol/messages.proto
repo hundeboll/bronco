@@ -13,6 +13,7 @@ enum packettype
     stoptype = 8;
     keepalivetype = 9;
     announcetype = 10;
+    confirmtype = 11;
 }
 
 message Peer {
@@ -92,4 +93,9 @@ message Announce {
     optional uint32 generation_count = 8;
     optional uint32 packet_size = 9;
     optional packettype type = 15 [default = announcetype];
+}
+
+message Confirm {
+    optional string list_hash = 1;
+    optional packettype type = 15 [default = confirmtype];
 }
