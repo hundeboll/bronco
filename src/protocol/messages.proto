@@ -24,6 +24,7 @@ message Peer {
     optional uint32 in_conn_max = 5;
     optional uint32 out_conn_max = 6;
     optional uint32 spare_peers = 7;
+    optional string content_id = 8;
     optional packettype type = 15 [default = peertype];
 }
 

@@ -100,5 +100,9 @@ void bronco::serverconnection::process_message(const protocol::Config &config)
 
 void bronco::serverconnection::process_message(const protocol::Peers &peers)
 {
+    std::cout << "Received peers:" << std::endl;
 
+    for (size_t i; i < peers.peers_size(); ++i) {
+        std::cout << "  " << peers.peers(i).peer_hash() << std::endl;
+    }
 }

@@ -1,6 +1,5 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
-
 #include "peerlist.hpp"
 
 bronco::peerlist::peerlist(const protocol::Announce &announce)
@@ -49,9 +48,9 @@ protocol::Peers bronco::peerlist::get_random_peers(const size_t no)
     /* Selecting random peers from peers_ */
     protocol::Peers peers;
     std::map<std::string, const_it> selected;
-    while (selected.size() <= no)
+    while (selected.size() < no)
     {
-        const_it beg;
+        const_it beg(peers_.begin());
         std::advance(beg, rand() % max);
         selected.insert(std::pair<std::string, const_it>(beg->first, beg));
     }

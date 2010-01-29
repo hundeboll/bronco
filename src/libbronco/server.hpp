@@ -40,6 +40,8 @@ namespace bronco {
 
             /**
              * Create new peerlist
+             * \param announce Announce message received from peer
+             * \return Pointer to created peerlist
              */
             peerlist::pointer new_peerlist(const protocol::Announce &announce)
             {
@@ -50,6 +52,26 @@ namespace bronco {
                 peerlists_.insert(std::pair<std::string, peerlist::pointer>(pl->list_hash(), pl));
 
                 return pl;
+            }
+
+            /**
+             * Fetch existing peerlist
+             * \param list_hash Hash identifying list
+             * \return Pointer to list
+             */
+            peerlist::pointer get_peerlist(const std::string &list_hash)
+            {
+                /* Try to find list */
+                std::map<std::string, peerlist::pointer>::iterator list_it(peerlists_.find(list_hash));
+
+                /* Check if list is found */
+                if (list_it != peerlists_.end()) {
+                    return list_it->second;
+                } else {
+                    /* Return null pointer */
+                    peerlist::pointer p;
+                    return p;
+                }
             }
 
         private:

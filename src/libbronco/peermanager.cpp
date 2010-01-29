@@ -23,6 +23,9 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
 
     /* Setup configuration */
     me_.set_in_conn_max(5);
+    me_.set_spare_peers(2);
+    me_.set_peer_hash(utils::to_string(port_));
+    me_.set_content_id("File_Hash_No_Two");
     me_.set_port(port_);
 
     /* Open port for listening */
@@ -36,8 +39,12 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
     std::string server_port("60100");
     protocol::Announce announce;
     announce.set_file_hash("File_Hash_No_Two");
-    announce.set_peer_hash("Peer_Hash_No_One");
-    announce_server(server_address, server_port, announce);
+    announce.set_peer_hash(utils::to_string(port_));
+
+    if (port == 60200)
+        announce_server(server_address, server_port, announce);
+    else
+        connect_server(server_address, server_port);
 }
 
 void bronco::peermanager::updater()

@@ -100,6 +100,16 @@ void bronco::clientconnection::process_message(const protocol::Announce &announc
 void bronco::clientconnection::process_message(const protocol::Peer &peer)
 {
     /* Fetch right file manager and return list of peers */
+    peerlist_ = srv_->get_peerlist(peer.content_id());
+    if (peerlist_ == NULL) {
+        std::cerr << "Unknown content id" << std::endl;
+    } else {
+        protocol::Peers peers(peerlist_->get_peers(peer.out_conn_max() + peer.spare_peers()));
+        write_message(peers);
+    }
+
+    /* Insert new peer in list */
+    peerlist_->assign(peer);
 }
 
 void bronco::clientconnection::process_message(const protocol::Keepalive &keepalive)

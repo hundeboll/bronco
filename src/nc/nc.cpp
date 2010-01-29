@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 #include "peermanager.hpp"
 
 /**
@@ -35,13 +36,16 @@ int main(int argc, char **argv)
     signal(SIGINT, bronco::peermanager::close);
     signal(SIGTERM, bronco::peermanager::close);
 
-    bronco::peermanager manager(select_port());
-    manager.set_print(&myprintf);
-
+    uint16_t port;
     if (argc > 1) {
-        std::cout << "Connecting to " << argv[1] << std::endl;
-        manager.connect_peer("localhost", argv[1]);
+        std::istringstream p(argv[1]);
+        p >> port;
+    } else {
+        port = select_port();
     }
+
+    bronco::peermanager manager(port);
+    manager.set_print(&myprintf);
 
     manager.run();
 
