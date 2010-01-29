@@ -23,6 +23,7 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
 
     /* Setup configuration */
     me_.set_in_conn_max(5);
+    me_.set_out_conn_max(3);
     me_.set_spare_peers(2);
     me_.set_peer_hash(utils::to_string(port_));
     me_.set_content_id("File_Hash_No_Two");
