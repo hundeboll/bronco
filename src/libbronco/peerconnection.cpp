@@ -14,9 +14,11 @@ void bronco::peerconnection::handle_peer(const bool accept)
     read_type();
 }
 
-void bronco::peerconnection::handle_connect(const boost::system::error_code &error)
+void bronco::peerconnection::handle_connect(const boost::system::error_code &error, const protocol::Peer &remote_peer)
 {
     if (!error) {
+        /* Save info about connected peer */
+        remote_peer_ = remote_peer;
         /* Handshake */
         protocol::Connect connect;
         connect.set_peer_hash("connecting peer");
@@ -24,6 +26,9 @@ void bronco::peerconnection::handle_connect(const boost::system::error_code &err
 
         /* Wait for reply */
         read_type();
+    } else if (error == boost::asio::error::connection_refused) {
+        manager_->print("Connection to %s refused\n", remote_peer.peer_hash().c_str());
+        manager_->update_connections();
     } else {
         handle_error(error);
     }
@@ -46,7 +51,6 @@ void bronco::peerconnection::handle_error(const boost::system::error_code &error
             || error == boost::asio::error::broken_pipe) {
         /* Closing socket properly */
         close_socket();
-        std::cout << "Connection closed: " << error.message() << std::endl;
         manager_->update_connections();
     } else {
         throw std::runtime_error("Socket error: " + error.message());

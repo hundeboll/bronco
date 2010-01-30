@@ -1,6 +1,7 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
 #include "serverconnection.hpp"
+#include "peermanager.hpp"
 
 void bronco::serverconnection::handle_announce(const boost::system::error_code &error, const protocol::Announce &announce)
 {
@@ -55,6 +56,8 @@ void bronco::serverconnection::handle_error(const boost::system::error_code &err
             || error == boost::asio::error::broken_pipe) {
         /* Closing socket properly */
         close_socket();
+    } else if (error == boost::asio::error::connection_refused) {
+        manager_->print("Connection refused\n");
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -91,13 +94,32 @@ void bronco::serverconnection::process_type(const size_t type)
 
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
+    manager_->print("Received confirm on announce\n");
+    close_socket();
 }
 
 void bronco::serverconnection::process_message(const protocol::Config &config)
 {
+    manager_->print("Received configuration\n");
 }
 
 void bronco::serverconnection::process_message(const protocol::Peers &peers)
 {
-    manager_->PRINTF("Received peers");
+    const int32_t size(peers.peers_size());
+
+    /* Print info */
+    manager_->print("Received %d peers:\n", size);
+    for (int32_t i(0); i < size; ++i)
+    {
+        manager_->print("  %s\n", peers.peers(i).peer_hash().c_str());
+    }
+
+    /* We are done with this server connection */
+    close_socket();
+
+    /* Connect peers */
+    for (int32_t i(0); i < size; ++i)
+    {
+        manager_->connect_peer(peers.peers(i));
+    }
 }

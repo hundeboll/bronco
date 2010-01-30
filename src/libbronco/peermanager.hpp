@@ -3,8 +3,6 @@
 #ifndef _PEERMANAGER_H
 #define _PERRMANAGER_H
 
-#define PRINTF (*bprint)
-
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,22 +22,14 @@ namespace bronco {
     class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
         public:
             typedef boost::shared_ptr<peermanager> pointer;
-            int (*bprint)(const char *format, ...);
+            typedef int (*print_ptr)(const char *format, ...);
+            print_ptr print;
 
             /**
              * Construct manager object to accept and create peer connections
              * \param port Port to listen for peer connections on
              */
-            peermanager(uint16_t port, int (*f)(const char *format, ...) = &printf);
-
-            /**
-             * Unlock mutex and stop threads before closing
-             */
-            ~peermanager()
-            {
-                stop_ = true;
-                update_cond_.notify_all();
-            }
+            peermanager(uint16_t port, print_ptr f);
 
             /**
              * Wrapper to io_service::run()
@@ -50,16 +40,18 @@ namespace bronco {
             }
 
             /**
-             * Stop io services to close object
+             * Stop io services and unlock mutex to close object
              */
             void close()
             {
                 io_.stop();
+                stop_ = true;
+                update_cond_.notify_all();
             }
 
-            void set_print(int (*f)(const char *format, ...))
+            void set_print(print_ptr f)
             {
-                bprint = f;
+                print = f;
             }
 
             /**
@@ -84,7 +76,7 @@ namespace bronco {
              * \param address IP-address or hostname of remote peer
              * \param port Port on remote peer
              */
-            void connect_peer(const std::string &address, const std::string &port);
+            void connect_peer(const protocol::Peer &peer);
 
         private:
             /* Connection */

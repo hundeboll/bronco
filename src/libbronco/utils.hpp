@@ -1,7 +1,9 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-#include <string.h>
+#include <boost/regex.hpp>
+
+#include <string>
 #include <sstream>
 
 namespace bronco {
@@ -15,6 +17,29 @@ namespace bronco {
                 ss << t;
                 return ss.str();
             }
+    };
+
+    class parser {
+        public:
+            parser(const std::string &url)
+                : url_(url),
+                validator_("(bronco):\\/\\/(\\w+\\.)*(\\w*)\\/([\\w\\d]+\\/{0,1})+")
+            {
+                /* Validate URL */
+                if (!boost::regex_match(url_.c_str(), pieces_, validator_))
+                    throw std::runtime_error("Invalid URL");
+            }
+
+            const std::string scheme()
+            {
+                return std::string(pieces_[1].first, pieces_[1].second);
+            }
+
+        private:
+            const std::string url_;
+            boost::regex validator_;
+            boost::cmatch pieces_;
+
     };
 }
 #endif

@@ -41,7 +41,7 @@ namespace bronco {
 
             /* Handle new connections */
             void handle_peer(const bool accept);
-            void handle_connect(const boost::system::error_code &error);
+            void handle_connect(const boost::system::error_code &error, const protocol::Peer &remote_peer);
 
             /* Handle read and write completions */
             void handle_write(const boost::system::error_code &error);
@@ -61,6 +61,7 @@ namespace bronco {
             /* States */
             bool accept_, connected_, started_;
             peermanager *manager_;
+            protocol::Peer remote_peer_;
     };
 } // namespace bronco
 

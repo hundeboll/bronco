@@ -19,7 +19,7 @@ enum packettype
 message Peer {
     optional string address = 1;
     optional string peer_hash = 2;
-    optional uint32 port = 3;
+    optional string port = 3;
     optional bool complete = 4;
     optional uint32 in_conn_max = 5;
     optional uint32 out_conn_max = 6;
@@ -86,7 +86,7 @@ message Keepalive {
 message Announce {
     optional string peer_hash = 1;
     optional string peer_address = 2;
-    optional uint32 peer_port = 3;
+    optional string peer_port = 3;
     optional string file_name = 4;
     optional uint32 file_size = 5;
     optional string file_hash = 6;

@@ -12,21 +12,25 @@ boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
 boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...))
-    : bprint(f),
+bronco::peermanager::peermanager(uint16_t port, print_ptr f)
+    : print(f),
     port_(port),
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     stop_(false)
 {
-    PRINTF("Starting BRONCO\n");
+    print("Starting BRONCO\n");
+
+    parser parsed("bronco://127.0.0.1/File_Hash_No_Two");
+    print("Scheme: %s\n", parsed.scheme().c_str());
 
     /* Setup configuration */
+    std::string sport(utils::to_string(port_));
     me_.set_in_conn_max(5);
     me_.set_out_conn_max(3);
     me_.set_spare_peers(2);
     me_.set_peer_hash(utils::to_string(port_));
     me_.set_content_id("File_Hash_No_Two");
-    me_.set_port(port_);
+    me_.set_port(sport);
 
     /* Open port for listening */
     listen();
@@ -39,7 +43,9 @@ bronco::peermanager::peermanager(uint16_t port, int (*f)(const char *format, ...
     std::string server_port("60100");
     protocol::Announce announce;
     announce.set_file_hash("File_Hash_No_Two");
-    announce.set_peer_hash(utils::to_string(port_));
+    announce.set_peer_hash(sport);
+    announce.set_peer_address("127.0.0.1");
+    announce.set_peer_port(sport);
 
     /* Resolve server host */
     server_conn_.reset(new serverconnection(io_, this));
@@ -76,7 +82,7 @@ void bronco::peermanager::updater()
 
 void bronco::peermanager::listen()
 {
-    std::cout << "Listening on port " << port_ << std::endl;
+    print("Listening on port %d\n", port_);
 
     /* Initiate accepting loop */
     in_conn_ = peerconnection::create(io_, this);
@@ -101,14 +107,14 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
             boost::bind(&peermanager::handle_incoming, this, boost::asio::placeholders::error));
 }
 
-void bronco::peermanager::connect_peer(const std::string &address, const std::string &port)
+void bronco::peermanager::connect_peer(const protocol::Peer &peer)
 {
-    endpoint_it peer_end(resolve_host(address, port));
+    endpoint_it peer_end(resolve_host(peer.address(), peer.port()));
 
     /* Open connection */
     out_conn_ = peerconnection::create(io_, this);
     out_conn_->socket().async_connect(*peer_end,
-            boost::bind(&peerconnection::handle_connect, out_conn_, boost::asio::placeholders::error));
+            boost::bind(&peerconnection::handle_connect, out_conn_, boost::asio::placeholders::error, peer));
 
     /* Save connection */
     out_peers_.push_back(out_conn_);
