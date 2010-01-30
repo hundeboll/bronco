@@ -12,6 +12,7 @@
 #include "messages.pb.h"
 
 namespace bronco {
+    class peermanager;
     class serverconnection : public connection {
         public:
             typedef boost::shared_ptr<serverconnection> pointer;
@@ -20,8 +21,9 @@ namespace bronco {
              * Create connection object to server
              * \param io io service to use in connection
              */
-            serverconnection(boost::asio::io_service &io)
-                : connection(io)
+            serverconnection(boost::asio::io_service &io, peermanager *manager)
+                : connection(io),
+                manager_(manager)
             {}
 
             /**
@@ -37,12 +39,6 @@ namespace bronco {
             void keep_alive(std::string &peer_hash);
 
             /**
-             * \brief Notify server about shutdown
-             * \param peer_hash String identifying the leaving peer
-             */
-            void leave(std::string &peer_hash);
-
-            /**
              * Start communication with server to announce new file when connected
              * \param error Possible error occurring in connect operation
              * \param announce Announce message
@@ -56,7 +52,16 @@ namespace bronco {
              */
             void handle_connect(const boost::system::error_code &error, const protocol::Peer &me);
 
+            /**
+             * Tell server that we are leaving
+             * \param error Possible error occurring in connect operation
+             * \param peer_hash String identifying leaving peer
+             */
+            void leave(const boost::system::error_code &error, const std::string &peer_hash);
+
         private:
+            peermanager *manager_;
+
             /** Virtual function in connection called when async read operations completes
              * \param error Possivle error occurred in operation
              */

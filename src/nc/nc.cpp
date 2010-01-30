@@ -1,7 +1,5 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
-#include <boost/asio.hpp>
-
 #include <signal.h>
 #include <inttypes.h>
 #include <cstdlib>
@@ -11,14 +9,11 @@
 #include <sstream>
 #include "peermanager.hpp"
 
-/**
- * Select random port
- * \return Selected port
- */
-uint16_t select_port()
+bronco::peermanager *manager_ptr;
+
+void signal_close(int not_used)
 {
-    srand(time(0));
-    return (rand() % 1024) + 49151;
+    manager_ptr->close();
 }
 
 int myprintf(const char *format, ...) {
@@ -32,22 +27,24 @@ int myprintf(const char *format, ...) {
 
 int main(int argc, char **argv)
 {
-    /* Catch signals */
-    signal(SIGINT, bronco::peermanager::close);
-    signal(SIGTERM, bronco::peermanager::close);
 
     uint16_t port;
     if (argc > 1) {
         std::istringstream p(argv[1]);
         p >> port;
     } else {
-        port = select_port();
+        port = bronco::peermanager::select_port();
     }
 
-    bronco::peermanager manager(port);
-    manager.set_print(&myprintf);
+    /* Create peer manager */
+    manager_ptr = new bronco::peermanager(port, &myprintf);
 
-    manager.run();
+    /* Catch signals */
+    signal(SIGINT, signal_close);
+    signal(SIGTERM, signal_close);
+
+    /* Start io_service */
+    manager_ptr->run();
 
     std::cout << "Bye bye" << std::endl;
 

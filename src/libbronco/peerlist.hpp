@@ -42,8 +42,9 @@ namespace bronco {
 
             /**
              * Remove specified peer from list
+             * \param peer_hash ID of peer to remove
              */
-            void assign(const std::string &peer_hash)
+            void remove(const std::string &peer_hash)
             {
                 peers_.erase(peer_hash);
             }

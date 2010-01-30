@@ -15,6 +15,7 @@
 #include <vector>
 #include <inttypes.h>
 #include <cstdio>
+#include <cstdlib>
 
 #include "peerconnection.hpp"
 #include "serverconnection.hpp"
@@ -51,7 +52,7 @@ namespace bronco {
             /**
              * Stop io services to close object
              */
-            static void close(int signo)
+            void close()
             {
                 io_.stop();
             }
@@ -59,6 +60,16 @@ namespace bronco {
             void set_print(int (*f)(const char *format, ...))
             {
                 bprint = f;
+            }
+
+            /**
+             * Select random port
+             * \return Selected port
+             */
+            static uint16_t select_port()
+            {
+                srand(time(0));
+                return (rand() % 1024) + 49151;
             }
 
             /**
@@ -73,7 +84,6 @@ namespace bronco {
              * \param address IP-address or hostname of remote peer
              * \param port Port on remote peer
              */
-            void connect_peer(const std::string &address, const uint16_t port);
             void connect_peer(const std::string &address, const std::string &port);
 
         private:
@@ -84,6 +94,8 @@ namespace bronco {
             boost::asio::ip::tcp::acceptor acceptor_;
             peerconnection::pointer out_conn_, in_conn_;
             serverconnection::pointer server_conn_;
+            typedef boost::asio::ip::tcp::resolver::iterator endpoint_it;
+            endpoint_it srv_endpoint_;
             protocol::Peer me_;
 
             /* Thread */
@@ -120,18 +132,33 @@ namespace bronco {
              * \param address Address or hostname of server
              * \param port Port of server
              */
-            void connect_server(const std::string &address, const std::string port);
-
-            /**
-             * Wrap uint port to std string
-             */
-            void connect_server(const std::string &address, const uint16_t port);
+            void connect_server();
 
             /**
              * Connect to server and announce new file
              */
-            void announce_server(const std::string &adress, const std::string port, const protocol::Announce &announce);
+            void announce_server(const protocol::Announce &announce);
 
+            /**
+             * Connect to server and send leave
+             */
+            void leave_server();
+
+            /**
+             * Resolve address and port to endpoint iterator
+             * \param address Address of host to resolve
+             * \param port Port on host to connect
+             * \return iterator to endpoint of host
+             */
+            boost::asio::ip::tcp::resolver::iterator resolve_host(const std::string &address, const std::string port)
+            {
+                /* Resolve IP and port to an endpoint */
+                using boost::asio::ip::tcp;
+                tcp::resolver resolver(io_);
+                tcp::resolver::query query(address, port);
+
+                return resolver.resolve(query);
+            }
     };
 } // namespace bronco
 

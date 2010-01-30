@@ -120,5 +120,6 @@ void bronco::clientconnection::process_message(const protocol::Keepalive &keepal
 void bronco::clientconnection::process_message(const protocol::Leave &leave)
 {
     /* Remove peer from list */
+    peerlist_->remove(leave.peer_hash());
 }
 

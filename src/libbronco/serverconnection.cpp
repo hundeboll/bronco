@@ -4,8 +4,6 @@
 
 void bronco::serverconnection::handle_announce(const boost::system::error_code &error, const protocol::Announce &announce)
 {
-    std::cout << "Connected to server" << std::endl;
-
     /* Send join request */
     write_message(announce);
 
@@ -15,13 +13,18 @@ void bronco::serverconnection::handle_announce(const boost::system::error_code &
 
 void bronco::serverconnection::handle_connect(const boost::system::error_code &error, const protocol::Peer &me)
 {
-    std::cout << "Connected to server" << std::endl;
-
     /* Send join request */
     write_message(me);
 
     /* Wait for reply */
     read_type();
+}
+
+void bronco::serverconnection::leave(const boost::system::error_code &error, const std::string &peer_hash)
+{
+    protocol::Leave leave;
+    leave.set_peer_hash(peer_hash);
+    write_message(leave);
 }
 
 void bronco::serverconnection::handle_read(const boost::system::error_code &error, size_t type)
@@ -52,7 +55,6 @@ void bronco::serverconnection::handle_error(const boost::system::error_code &err
             || error == boost::asio::error::broken_pipe) {
         /* Closing socket properly */
         close_socket();
-        std::cout << "Connection closed: " << error.message() << std::endl;
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -89,20 +91,13 @@ void bronco::serverconnection::process_type(const size_t type)
 
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
-    std::cout << "Received confirmation on announce" << std::endl;
 }
 
 void bronco::serverconnection::process_message(const protocol::Config &config)
 {
-    std::cout << "Received config" << std::endl;
-
 }
 
 void bronco::serverconnection::process_message(const protocol::Peers &peers)
 {
-    std::cout << "Received peers:" << std::endl;
-
-    for (size_t i; i < peers.peers_size(); ++i) {
-        std::cout << "  " << peers.peers(i).peer_hash() << std::endl;
-    }
+    manager_->PRINTF("Received peers");
 }
