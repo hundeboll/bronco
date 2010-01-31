@@ -12,52 +12,54 @@ boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
 boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(uint16_t port, print_ptr f)
+bronco::peermanager::peermanager(const std::string &url, print_ptr f)
     : print(f),
-    port_(port),
-    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
+    parsed_url_(url),
+    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), parsed_url_.int_port())),
     stop_(false)
 {
     print("Starting BRONCO\n");
 
-    parser parsed("bronco://127.0.0.1/File_Hash_No_Two");
-    print("Scheme: %s\n", parsed.scheme().c_str());
-    print("Host: %s\n", parsed.host().c_str());
-    print("Port: %s\n", parsed.port().c_str());
-    print("Content id: %s\n", parsed.content_id().c_str());
+    print("Scheme: %s\n", parsed_url_.scheme().c_str());
+    print("Host: %s\n", parsed_url_.host().c_str());
+    print("Port: %s\n", parsed_url_.port().c_str());
+    print("Content id: %s\n", parsed_url_.content_id().c_str());
 
     /* Setup configuration */
-    std::string sport(utils::to_string(port_));
     me_.set_in_conn_max(5);
     me_.set_out_conn_max(3);
     me_.set_spare_peers(2);
-    me_.set_peer_hash(utils::to_string(port_));
-    me_.set_content_id("File_Hash_No_Two");
-    me_.set_port(sport);
+    me_.set_port(utils::to_string(select_port()));
+    me_.set_peer_hash(me_.port());
+    me_.set_content_id(parsed_url_.content_id());
 
     /* Open port for listening */
     listen();
 
-    /* Collect garbage */
+    /* Watch connections */
     boost::thread t(boost::bind(&peermanager::updater, this));
-
-    /* TEST: Join network */
-    std::string server_address("127.0.0.1");
-    std::string server_port("60100");
-    protocol::Announce announce;
-    announce.set_file_hash("File_Hash_No_Two");
-    announce.set_peer_hash(sport);
-    announce.set_peer_address("127.0.0.1");
-    announce.set_peer_port(sport);
 
     /* Resolve server host */
     server_conn_.reset(new serverconnection(io_, this));
-    srv_endpoint_ = resolve_host(server_address, server_port);
+    srv_endpoint_ = resolve_host(parsed_url_.host(), parsed_url_.port());
+}
 
-    if (port == 60200)
-        announce_server(announce);
-    else
-        connect_server();
+void bronco::peermanager::connect()
+{
+    connect_server();
+}
+
+void bronco::peermanager::announce_file(const std::string &path)
+{
+    /* Load file */
+    protocol::Announce announce;
+    announce.set_file_hash("File_Hash_No_Two");
+    announce.set_peer_hash(me_.port());
+    announce.set_peer_address("127.0.0.1");
+    announce.set_peer_port(me_.port());
+
+    /* Send announce to server */
+    announce_server(announce);
 }
 
 void bronco::peermanager::updater()
@@ -85,8 +87,6 @@ void bronco::peermanager::updater()
 
 void bronco::peermanager::listen()
 {
-    print("Listening on port %d\n", port_);
-
     /* Initiate accepting loop */
     in_conn_ = peerconnection::create(io_, this);
     acceptor_.async_accept(in_conn_->socket(),

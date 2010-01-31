@@ -27,17 +27,19 @@ int myprintf(const char *format, ...) {
 
 int main(int argc, char **argv)
 {
-
-    uint16_t port;
-    if (argc > 1) {
-        std::istringstream p(argv[1]);
-        p >> port;
+    /* Read arguments */
+    if (argc == 2) {
+        /* Create peer manager */
+        manager_ptr = new bronco::peermanager(argv[1], &myprintf);
+        manager_ptr->connect();
+    } else if (argc == 4) {
+        manager_ptr = new bronco::peermanager(argv[3], &myprintf);
+        manager_ptr->announce_file(argv[2]);
     } else {
-        port = bronco::peermanager::select_port();
+        myprintf("Announce: %s --announce <path-to-file> bronco://<host>[:<port>]\n", argv[0]);
+        myprintf("    Join: %s bronco://<host>[:<port>]/<content_id>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
-
-    /* Create peer manager */
-    manager_ptr = new bronco::peermanager(port, &myprintf);
 
     /* Catch signals */
     signal(SIGINT, signal_close);

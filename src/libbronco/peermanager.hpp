@@ -29,7 +29,7 @@ namespace bronco {
              * Construct manager object to accept and create peer connections
              * \param port Port to listen for peer connections on
              */
-            peermanager(uint16_t port, print_ptr f);
+            peermanager(const std::string &url, print_ptr f);
 
             /**
              * Wrapper to io_service::run()
@@ -58,7 +58,7 @@ namespace bronco {
              * Select random port
              * \return Selected port
              */
-            static uint16_t select_port()
+            uint16_t select_port()
             {
                 srand(time(0));
                 return (rand() % 1024) + 49151;
@@ -78,9 +78,20 @@ namespace bronco {
              */
             void connect_peer(const protocol::Peer &peer);
 
+            /**
+             * Load file and announce it to server
+             * \param path Path to file for sharing
+             */
+            void announce_file(const std::string &path);
+
+            /**
+             * Join network by connection to server
+             */
+            void connect();
+
         private:
             /* Connection */
-            uint16_t port_;
+            parser parsed_url_;
             std::vector<peerconnection::pointer> in_peers_, out_peers_;
             static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;

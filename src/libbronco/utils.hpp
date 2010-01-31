@@ -71,6 +71,17 @@ namespace bronco {
                 }
             }
 
+            /** Read port from url and convert to int
+             * \return port as integer
+             */
+            uint16_t int_port() const
+            {
+                uint16_t port;
+                std::istringstream p(std::string(pieces_[6].first, pieces_[6].second));
+                p >> port;
+                return port;
+            }
+
             /**
              * Read content id hash from url
              * \return Content id given in url
