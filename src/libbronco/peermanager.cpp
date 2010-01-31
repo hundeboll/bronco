@@ -22,6 +22,9 @@ bronco::peermanager::peermanager(uint16_t port, print_ptr f)
 
     parser parsed("bronco://127.0.0.1/File_Hash_No_Two");
     print("Scheme: %s\n", parsed.scheme().c_str());
+    print("Host: %s\n", parsed.host().c_str());
+    print("Port: %s\n", parsed.port().c_str());
+    print("Content id: %s\n", parsed.content_id().c_str());
 
     /* Setup configuration */
     std::string sport(utils::to_string(port_));
