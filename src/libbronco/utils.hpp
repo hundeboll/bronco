@@ -8,7 +8,11 @@
 
 namespace bronco {
     class utils {
-        /* Convert objects to std::string */
+        /**
+         * Convert objects to std::string
+         * \param t Object to convert to string
+         * \return String made from object
+         */
         public:
             template<typename T>
             static std::string to_string(const T &t)
