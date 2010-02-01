@@ -17,6 +17,7 @@
 
 #include "peerconnection.hpp"
 #include "serverconnection.hpp"
+#include "parser.hpp"
 
 namespace bronco {
     class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
