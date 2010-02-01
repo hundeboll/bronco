@@ -41,6 +41,18 @@ namespace bronco {
             }
 
             /**
+             * Update time stamp for a peer
+             * \param peer Peer to update time stamp on
+             */
+            void update_timestamp(const std::string &peer)
+            {
+                peer_list::iterator peer_it(peers_.find(peer));
+                if (peer_it != peers_.end()) {
+                    peer_it->second.second = time(0);
+                }
+            }
+
+            /**
              * Remove specified peer from list
              * \param peer_hash ID of peer to remove
              */

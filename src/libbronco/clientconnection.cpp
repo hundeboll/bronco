@@ -117,6 +117,13 @@ void bronco::clientconnection::process_message(protocol::Peer &peer)
 void bronco::clientconnection::process_message(const protocol::Keepalive &keepalive)
 {
     /* Update time stamp of transmitting peer */
+    peerlist_ = srv_->get_peerlist(keepalive.content_id());
+    if (peerlist_ != NULL) {
+        std::cout << "Updating time stamp for " << keepalive.peer_hash() << std::endl;
+        peerlist_->update_timestamp(keepalive.peer_hash());
+    } else {
+        std::cerr << "Content id not found when updating peer: " << keepalive.content_id() << std::endl;
+    }
 }
 
 void bronco::clientconnection::process_message(const protocol::Leave &leave)
@@ -127,7 +134,7 @@ void bronco::clientconnection::process_message(const protocol::Leave &leave)
         std::cout << "Removing " << leave.peer_hash() << " from " << leave.content_id() << std::endl;
         peerlist_->remove(leave.peer_hash());
     } else {
-        std::cerr << "Content id not found" << std::endl;
+        std::cerr << "Content id not found when removing peer: " << leave.content_id() << std::endl;
     }
 }
 

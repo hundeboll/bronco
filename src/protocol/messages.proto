@@ -81,6 +81,7 @@ message Stop {
 
 message Keepalive {
     optional string peer_hash = 1;
+    optional string content_id = 2;
     optional packettype type = 15 [default = keepalivetype];
 }
 
