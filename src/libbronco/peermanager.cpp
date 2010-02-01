@@ -15,7 +15,8 @@ boost::asio::io_service bronco::peermanager::io_;
 bronco::peermanager::peermanager(const std::string &url, print_ptr f)
     : print(f),
     parsed_url_(url),
-    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), parsed_url_.int_port())),
+    port_(select_port()),
+    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     stop_(false)
 {
     print("Starting BRONCO\n");
@@ -29,7 +30,7 @@ bronco::peermanager::peermanager(const std::string &url, print_ptr f)
     me_.set_in_conn_max(5);
     me_.set_out_conn_max(3);
     me_.set_spare_peers(2);
-    me_.set_port(utils::to_string(select_port()));
+    me_.set_port(utils::to_string(port_));
     me_.set_peer_hash(me_.port());
     me_.set_content_id(parsed_url_.content_id());
 

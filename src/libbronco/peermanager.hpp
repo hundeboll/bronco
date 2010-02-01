@@ -92,6 +92,7 @@ namespace bronco {
         private:
             /* Connection */
             parser parsed_url_;
+            uint16_t port_;
             std::vector<peerconnection::pointer> in_peers_, out_peers_;
             static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
