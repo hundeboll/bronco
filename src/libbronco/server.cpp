@@ -50,7 +50,7 @@ void bronco::server::clean_peers()
         for (it beg(peerlists_.begin()), end(peerlists_.end()); beg != end; ++beg)
         {
             /* Clean each list */
-            beg->second->remove_timeouts(1);
+            beg->second->remove_timeouts(5);
         }
     }
 }
