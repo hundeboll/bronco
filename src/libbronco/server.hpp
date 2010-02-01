@@ -91,6 +91,11 @@ namespace bronco {
              * \param error Possible error occurred in accept operation
              */
             void handle_incoming(const boost::system::error_code &error);
+
+            /**
+             * Walk through peers in each list and remove timeouts
+             */
+            void clean_peers();
     };
 } // Namespace bronco
 

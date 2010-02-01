@@ -21,12 +21,6 @@ void bronco::serverconnection::handle_connect(const boost::system::error_code &e
     read_type();
 }
 
-void bronco::serverconnection::leave(const boost::system::error_code &error, const protocol::Leave &leave)
-{
-    manager_->print("Sending leave with content id %s\n", leave.content_id().c_str());
-    write_message(leave);
-}
-
 void bronco::serverconnection::handle_read(const boost::system::error_code &error, size_t type)
 {
     /* Check if read operation resulted in error */

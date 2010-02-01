@@ -45,7 +45,13 @@ namespace bronco {
              */
             void close()
             {
-                leave_server();
+                /* Create leave message */
+                protocol::Leave leave;
+                leave.set_peer_hash(me_.peer_hash());
+                leave.set_content_id(content_id_);
+                server_conn_->send(*srv_endpoint_, leave);
+
+                /* Now close down */
                 acceptor_.close();
                 io_.stop();
                 stop_ = true;
@@ -117,6 +123,11 @@ namespace bronco {
              * Clean up closed connections and create new if needed
              */
             void updater();
+
+            /**
+             * Send keep-alive messages to server every third minute
+             */
+            void keepalive();
 
             /**
              * Accept incoming connections

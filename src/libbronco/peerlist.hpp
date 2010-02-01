@@ -62,6 +62,22 @@ namespace bronco {
             }
 
             /**
+             * Remove all outdated peers
+             * \param timeout Timeout in minutes
+             */
+            void remove_timeouts(const size_t timeout)
+            {
+                typedef peer_list::iterator it;
+                for (it beg(peers_.begin()), end(peers_.end()); beg != end; ++beg)
+                {
+                    if (beg->second.second < time(0) - timeout*60) {
+                        std::cout << "Peer " << beg->first << " timed out" << std::endl;
+                        peers_.erase(beg);
+                    }
+                }
+            }
+
+            /**
              * Select a subset of peers from the list
              * \param no The number of peers to select
              * \return List of peers

@@ -54,10 +54,24 @@ namespace bronco {
 
             /**
              * Tell server that we are leaving
-             * \param error Possible error occurring in connect operation
-             * \param peer_hash String identifying leaving peer
+             * \param srv_endpoint Resolved endpoint to server
+             * \param message protocol::Leave object to be send
              */
-            void leave(const boost::system::error_code &error, const protocol::Leave &leave);
+            template<typename T>
+            void send(boost::asio::ip::tcp::endpoint srv_endpoint, const T &message)
+            {
+                boost::system::error_code error;
+
+                /* Connect to server and send message */
+                socket().connect(srv_endpoint, error);
+                if (!error) {
+                    write_sync_message(message);
+                    close_socket();
+                } else if (error == boost::asio::error::connection_refused) {
+                } else {
+                    throw error;
+                }
+            }
 
         private:
             peermanager *manager_;

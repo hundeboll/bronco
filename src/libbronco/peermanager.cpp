@@ -37,8 +37,9 @@ bronco::peermanager::peermanager(const std::string &url, print_ptr f)
     /* Open port for listening */
     listen();
 
-    /* Watch connections */
-    boost::thread t(boost::bind(&peermanager::updater, this));
+    /* Watch connections and send keep-alives */
+    boost::thread t1(boost::bind(&peermanager::updater, this));
+    boost::thread t2(boost::bind(&peermanager::keepalive, this));
 
     /* Resolve server host */
     server_conn_.reset(new serverconnection(io_, this));
@@ -52,7 +53,7 @@ void bronco::peermanager::connect()
         announce_file(parsed_url_.content_id());
     } else {
         /* Store dontent id and join network */
-        content_id_ = parsed_url_.path();
+        content_id_ = parsed_url_.content_id();
         connect_server();
     }
 }
@@ -71,7 +72,8 @@ void bronco::peermanager::announce_file(const std::string &path)
 
 void bronco::peermanager::updater()
 {
-    while (!stop_) {
+    while (!stop_)
+    {
         /* Wait for closed connections */
         scoped_lock lock(update_mutex_);
         update_cond_.wait(lock);
@@ -89,6 +91,22 @@ void bronco::peermanager::updater()
 
             /* Connect to received peers */
         }
+    }
+}
+
+void bronco::peermanager::keepalive()
+{
+    protocol::Keepalive keepalive;
+
+    while (!stop_)
+    {
+        /* Sleep three minutes */
+        boost::this_thread::sleep(boost::posix_time::minutes(3));
+
+        /* Send keep-alive to server */
+        keepalive.set_peer_hash(me_.peer_hash());
+        keepalive.set_content_id(content_id_);
+        server_conn_->send(*srv_endpoint_, keepalive);
     }
 }
 
@@ -156,24 +174,4 @@ void bronco::peermanager::announce_server(const protocol::Announce &announce)
 {
     server_conn_->socket().async_connect(*srv_endpoint_,
             boost::bind(&serverconnection::handle_announce, server_conn_, boost::asio::placeholders::error, announce));
-}
-
-void bronco::peermanager::leave_server()
-{
-    /* Create leave message */
-    protocol::Leave leave;
-    leave.set_peer_hash(me_.peer_hash());
-    leave.set_content_id(content_id_);
-
-    /* Connect to server and send leave */
-    boost::system::error_code error;
-    server_conn_->socket().connect(*srv_endpoint_, error);
-    if (!error) {
-        server_conn_->write_sync_message(leave);
-        server_conn_->close_socket();
-    } else if (error == boost::asio::error::connection_refused) {
-        print("Connection refused by server when sending leave\n");
-    } else {
-        throw error;
-    }
 }
