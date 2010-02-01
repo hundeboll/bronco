@@ -52,7 +52,7 @@ void bronco::peermanager::connect()
         announce_file(parsed_url_.content_id());
     } else {
         /* Store dontent id and join network */
-        content_id_ = parsed_url_.content_id();
+        content_id_ = parsed_url_.path();
         connect_server();
     }
 }

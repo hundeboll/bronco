@@ -72,6 +72,14 @@ namespace bronco {
                 return std::string(pieces_[7].first, pieces_[7].second);
             }
 
+            /** Same as content id, but used for abronco
+             * \return path to file given in url
+             */
+            std::string path() const
+            {
+                return content_id();
+            }
+
         private:
             const std::string url_;
             boost::regex url_regex_;
