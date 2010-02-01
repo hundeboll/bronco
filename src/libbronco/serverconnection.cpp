@@ -21,10 +21,9 @@ void bronco::serverconnection::handle_connect(const boost::system::error_code &e
     read_type();
 }
 
-void bronco::serverconnection::leave(const boost::system::error_code &error, const std::string &peer_hash)
+void bronco::serverconnection::leave(const boost::system::error_code &error, const protocol::Leave &leave)
 {
-    protocol::Leave leave;
-    leave.set_peer_hash(peer_hash);
+    manager_->print("Sending leave with content id %s\n", leave.content_id().c_str());
     write_message(leave);
 }
 
@@ -95,6 +94,7 @@ void bronco::serverconnection::process_type(const size_t type)
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
     manager_->print("Received confirm on announce\n");
+    manager_->set_content_id(confirm.list_hash());
     close_socket();
 }
 

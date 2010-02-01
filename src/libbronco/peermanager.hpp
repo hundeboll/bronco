@@ -45,6 +45,8 @@ namespace bronco {
              */
             void close()
             {
+                leave_server();
+                acceptor_.close();
                 io_.stop();
                 stop_ = true;
                 update_cond_.notify_all();
@@ -53,6 +55,11 @@ namespace bronco {
             void set_print(print_ptr f)
             {
                 print = f;
+            }
+
+            void set_content_id(const std::string &id)
+            {
+                content_id_ = id;
             }
 
             /**
@@ -80,12 +87,6 @@ namespace bronco {
             void connect_peer(const protocol::Peer &peer);
 
             /**
-             * Load file and announce it to server
-             * \param path Path to file for sharing
-             */
-            void announce_file(const std::string &path);
-
-            /**
              * Join network by connection to server
              */
             void connect();
@@ -101,7 +102,10 @@ namespace bronco {
             serverconnection::pointer server_conn_;
             typedef boost::asio::ip::tcp::resolver::iterator endpoint_it;
             endpoint_it srv_endpoint_;
+
+            /* Coding */
             protocol::Peer me_;
+            std::string content_id_;
 
             /* Thread */
             bool stop_;
@@ -164,6 +168,12 @@ namespace bronco {
 
                 return resolver.resolve(query);
             }
+
+            /**
+             * Load file and announce it to server
+             * \param path Path to file for sharing
+             */
+            void announce_file(const std::string &path);
     };
 } // namespace bronco
 

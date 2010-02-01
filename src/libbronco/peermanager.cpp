@@ -51,7 +51,8 @@ void bronco::peermanager::connect()
         /* Prepare file for sharing and announce to server */
         announce_file(parsed_url_.content_id());
     } else {
-        /* Join network */
+        /* Store dontent id and join network */
+        content_id_ = parsed_url_.content_id();
         connect_server();
     }
 }
@@ -159,6 +160,13 @@ void bronco::peermanager::announce_server(const protocol::Announce &announce)
 
 void bronco::peermanager::leave_server()
 {
-    server_conn_->socket().async_connect(*srv_endpoint_,
-            boost::bind(&serverconnection::leave, server_conn_, boost::asio::placeholders::error, me_.peer_hash()));
+    /* Create leave message */
+    protocol::Leave leave;
+    leave.set_peer_hash(me_.peer_hash());
+    leave.set_content_id(content_id_);
+
+    /* Connect to server and send leave */
+    server_conn_->socket().connect(*srv_endpoint_);
+    server_conn_->write_sync_message(leave);
+    server_conn_->close_socket();
 }

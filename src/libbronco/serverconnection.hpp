@@ -57,7 +57,7 @@ namespace bronco {
              * \param error Possible error occurring in connect operation
              * \param peer_hash String identifying leaving peer
              */
-            void leave(const boost::system::error_code &error, const std::string &peer_hash);
+            void leave(const boost::system::error_code &error, const protocol::Leave &leave);
 
         private:
             peermanager *manager_;

@@ -58,6 +58,7 @@ message Reply {
 
 message Leave {
     optional string peer_hash = 1;
+    optional string content_id = 2;
     optional packettype type = 15 [default = leavetype];
 }
 

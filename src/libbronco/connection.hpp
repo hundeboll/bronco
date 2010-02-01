@@ -91,6 +91,27 @@ namespace bronco {
             }
 
             /**
+             * Write a message and block until completed
+             * \param message Message defined in protocol:: to be written
+             */
+            template<typename T>
+            void write_sync_message(T &message)
+            {
+                /* Serialize */
+                if (!message.SerializeToString(&out_message_)) {
+                    throw std::runtime_error("Failed to serialize object of type " + utils::to_string(message.type()));
+                }
+
+                /* Create header with type of message and size of serialized data */
+                make_header(message.type(), out_message_.size());
+
+                /* Transfer header and message */
+                boost::asio::write(socket_, boost::asio::buffer(out_header_.str()));
+                boost::asio::write(socket_, boost::asio::buffer(out_message_));
+            }
+
+
+            /**
              * Use protobuf to parse read data into protocol object
              * \param message protocol object to parse data to
              */

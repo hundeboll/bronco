@@ -31,7 +31,6 @@ void bronco::clientconnection::handle_error(const boost::system::error_code &err
             || error == boost::asio::error::broken_pipe) {
         /* Closing socket properly */
         close_socket();
-        std::cout << "Connection closed: " << error.message() << std::endl;
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -101,15 +100,13 @@ void bronco::clientconnection::process_message(const protocol::Peer &peer)
 {
     /* Fetch right file manager and return list of peers */
     peerlist_ = srv_->get_peerlist(peer.content_id());
-    if (peerlist_ == NULL) {
-        std::cerr << "Unknown content id" << std::endl;
-    } else {
+    if (peerlist_ != NULL) {
         protocol::Peers peers(peerlist_->get_peers(peer.out_conn_max() + peer.spare_peers()));
         write_message(peers);
-    }
 
-    /* Insert new peer in list */
-    peerlist_->assign(peer);
+        /* Insert new peer in list */
+        peerlist_->assign(peer);
+    }
 }
 
 void bronco::clientconnection::process_message(const protocol::Keepalive &keepalive)
@@ -119,7 +116,11 @@ void bronco::clientconnection::process_message(const protocol::Keepalive &keepal
 
 void bronco::clientconnection::process_message(const protocol::Leave &leave)
 {
-    /* Remove peer from list */
-    peerlist_->remove(leave.peer_hash());
+    /* Get list and remove peer */
+    peerlist_ = srv_->get_peerlist(leave.content_id());
+    if (peerlist_ != NULL) {
+        std::cout << "Removing " << leave.peer_hash() << " from " << leave.content_id() << std::endl;
+        peerlist_->remove(leave.peer_hash());
+    }
 }
 
