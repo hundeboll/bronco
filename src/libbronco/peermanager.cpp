@@ -47,14 +47,20 @@ bronco::peermanager::peermanager(const std::string &url, print_ptr f)
 
 void bronco::peermanager::connect()
 {
-    connect_server();
+    if (parsed_url_.scheme() == "abronco") {
+        /* Prepare file for sharing and announce to server */
+        announce_file(parsed_url_.content_id());
+    } else {
+        /* Join network */
+        connect_server();
+    }
 }
 
 void bronco::peermanager::announce_file(const std::string &path)
 {
     /* Load file */
     protocol::Announce announce;
-    announce.set_file_hash("File_Hash_No_Two");
+    announce.set_file_hash(path);
     announce.set_peer_hash(me_.port());
     announce.set_peer_address("127.0.0.1");
     announce.set_peer_port(me_.port());

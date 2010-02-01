@@ -32,9 +32,6 @@ int main(int argc, char **argv)
         /* Create peer manager */
         manager_ptr = new bronco::peermanager(argv[1], &myprintf);
         manager_ptr->connect();
-    } else if (argc == 4) {
-        manager_ptr = new bronco::peermanager(argv[3], &myprintf);
-        manager_ptr->announce_file(argv[2]);
     } else {
         myprintf("Announce: %s --announce <path-to-file> bronco://<host>[:<port>]\n", argv[0]);
         myprintf("    Join: %s bronco://<host>[:<port>]/<content_id>\n", argv[0]);
