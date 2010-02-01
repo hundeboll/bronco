@@ -70,7 +70,7 @@ namespace bronco {
 
             /* Message processing */
             void process_message(const protocol::Announce &announce);
-            void process_message(const protocol::Peer &peer);
+            void process_message(protocol::Peer &peer);
             void process_message(const protocol::Keepalive &keepalive);
             void process_message(const protocol::Leave &leave);
     };

@@ -84,7 +84,7 @@ void bronco::clientconnection::process_message(const protocol::Announce &announc
 
     /* Assign peer to new list */
     protocol::Peer peer;
-    peer.set_address(announce.peer_address());
+    peer.set_address(socket().remote_endpoint().address().to_string());
     peer.set_port(announce.peer_port());
     peer.set_peer_hash(announce.peer_hash());
     peer.set_complete(true);
@@ -96,7 +96,7 @@ void bronco::clientconnection::process_message(const protocol::Announce &announc
     write_message(confirm);
 }
 
-void bronco::clientconnection::process_message(const protocol::Peer &peer)
+void bronco::clientconnection::process_message(protocol::Peer &peer)
 {
     /* Fetch right file manager and return list of peers */
     peerlist_ = srv_->get_peerlist(peer.content_id());
@@ -104,8 +104,13 @@ void bronco::clientconnection::process_message(const protocol::Peer &peer)
         protocol::Peers peers(peerlist_->get_peers(peer.out_conn_max() + peer.spare_peers()));
         write_message(peers);
 
+        /* Save peer address */
+        peer.set_address(socket().remote_endpoint().address().to_string());
+
         /* Insert new peer in list */
         peerlist_->assign(peer);
+    } else {
+        std::cerr << "Content id not found" << std::endl;
     }
 }
 
@@ -121,6 +126,8 @@ void bronco::clientconnection::process_message(const protocol::Leave &leave)
     if (peerlist_ != NULL) {
         std::cout << "Removing " << leave.peer_hash() << " from " << leave.content_id() << std::endl;
         peerlist_->remove(leave.peer_hash());
+    } else {
+        std::cerr << "Content id not found" << std::endl;
     }
 }
 

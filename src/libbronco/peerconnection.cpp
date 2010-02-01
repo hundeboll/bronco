@@ -162,8 +162,6 @@ void bronco::peerconnection::process_message(const protocol::Start &start)
 
 void bronco::peerconnection::process_message(const protocol::Data &data)
 {
-        std::cout << "Received data from generation: " << data.generation() << std::endl;
-
         /* Send stop */
         write_message(data);
 }

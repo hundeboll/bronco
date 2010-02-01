@@ -19,7 +19,7 @@ bronco::peermanager::peermanager(const std::string &url, print_ptr f)
     acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
     stop_(false)
 {
-    print("Starting BRONCO\n");
+    print("Bronco peer listening on port %s\n", utils::to_string(port_).c_str());
 
     print("Scheme: %s\n", parsed_url_.scheme().c_str());
     print("Host: %s\n", parsed_url_.host().c_str());
@@ -62,8 +62,7 @@ void bronco::peermanager::announce_file(const std::string &path)
     /* Load file */
     protocol::Announce announce;
     announce.set_file_hash(path);
-    announce.set_peer_hash(me_.port());
-    announce.set_peer_address("127.0.0.1");
+    announce.set_peer_hash(me_.peer_hash());
     announce.set_peer_port(me_.port());
 
     /* Send announce to server */
@@ -120,6 +119,7 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
 
 void bronco::peermanager::connect_peer(const protocol::Peer &peer)
 {
+    print("Connecting to %s:%s\n", peer.address().c_str(), peer.port().c_str());
     endpoint_it peer_end(resolve_host(peer.address(), peer.port()));
 
     /* Open connection */
@@ -166,7 +166,14 @@ void bronco::peermanager::leave_server()
     leave.set_content_id(content_id_);
 
     /* Connect to server and send leave */
-    server_conn_->socket().connect(*srv_endpoint_);
-    server_conn_->write_sync_message(leave);
-    server_conn_->close_socket();
+    boost::system::error_code error;
+    server_conn_->socket().connect(*srv_endpoint_, error);
+    if (!error) {
+        server_conn_->write_sync_message(leave);
+        server_conn_->close_socket();
+    } else if (error == boost::asio::error::connection_refused) {
+        print("Connection refused by server when sending leave\n");
+    } else {
+        throw error;
+    }
 }
