@@ -4,7 +4,6 @@
 #define _PERRMANAGER_H
 
 #include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
@@ -20,7 +19,7 @@
 #include "parser.hpp"
 
 namespace bronco {
-    class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
+    class peermanager : private boost::noncopyable {
         public:
             typedef boost::shared_ptr<peermanager> pointer;
             int (*print)(const char *format, ...);
