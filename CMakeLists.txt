@@ -10,6 +10,8 @@ find_package(Protobuf REQUIRED)
 
 include_directories(src/libbronco/)
 include_directories(src/protocol/)
+include_directories(src/third-party/)
+add_subdirectory(src/third-party/gf2/)
 add_subdirectory(src/protocol)
 add_subdirectory(src/libbronco)
 add_subdirectory(src/daemon)

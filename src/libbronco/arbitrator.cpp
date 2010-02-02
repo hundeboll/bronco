@@ -4,6 +4,6 @@
 
 using namespace bronco;
 
-arbitrator::arbitrator() {
+arbitrator::arbitrator(const std::string &path) {
     /* Packet manager */
 }

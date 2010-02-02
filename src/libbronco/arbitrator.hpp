@@ -4,13 +4,16 @@
 #define _ARBITRATOR_H
 
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "coder.hpp"
 
 namespace bronco {
     class arbitrator : private boost::noncopyable {
         public:
-            arbitrator();
+            typedef boost::shared_ptr<arbitrator> pointer;
+
+            arbitrator(const std::string &path);
 
         private:
             coder::pointer coder_ptr_;
