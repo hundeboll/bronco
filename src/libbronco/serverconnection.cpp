@@ -5,20 +5,41 @@
 
 void bronco::serverconnection::handle_announce(const boost::system::error_code &error, const protocol::Announce &announce)
 {
-    /* Send join request */
-    write_message(announce);
+    if (!error) {
+        /* send join request */
+        write_message(announce);
 
-    /* Wait for reply */
-    read_type();
+        /* wait for reply */
+        read_type();
+    } else {
+        handle_error(error);
+    }
+}
+
+void bronco::serverconnection::handle_request(const boost::system::error_code &error, const protocol::Request &request)
+{
+    if (!error) {
+        /* send join request */
+        write_message(request);
+
+        /* wait for reply */
+        read_type();
+    } else {
+        handle_error(error);
+    }
 }
 
 void bronco::serverconnection::handle_connect(const boost::system::error_code &error, const protocol::Peer &me)
 {
-    /* Send join request */
-    write_message(me);
+    if (!error) {
+        /* Send join request */
+        write_message(me);
 
-    /* Wait for reply */
-    read_type();
+        /* Wait for reply */
+        read_type();
+    } else {
+        handle_error(error);
+    }
 }
 
 void bronco::serverconnection::handle_read(const boost::system::error_code &error, size_t type)
@@ -50,7 +71,8 @@ void bronco::serverconnection::handle_error(const boost::system::error_code &err
         /* Closing socket properly */
         close_socket();
     } else if (error == boost::asio::error::connection_refused) {
-        manager_->print("Connection refused\n");
+        manager_->print("Connection refused from server\n");
+        close_socket();
     } else {
         throw std::runtime_error("Socket error: " + error.message());
     }
@@ -112,7 +134,7 @@ void bronco::serverconnection::process_message(const protocol::Peers &peers)
     close_socket();
 
     /* Connect peers */
-    for (int32_t i(0); i < size; ++i)
+    for (int32_t i(0); i < size && manager_->need_peers(); ++i)
     {
         manager_->connect_peer(peers.peers(i));
     }

@@ -14,6 +14,7 @@ enum packettype
     keepalivetype = 9;
     announcetype = 10;
     confirmtype = 11;
+    requesttype = 12;
 }
 
 message Peer {
@@ -101,4 +102,11 @@ message Announce {
 message Confirm {
     optional string list_hash = 1;
     optional packettype type = 15 [default = confirmtype];
+}
+
+message Request {
+    optional string peer_hash = 1;
+    optional string content_id = 2;
+    optional uint32 spare_peers = 3;
+    optional packettype type = 15 [default = requesttype];
 }

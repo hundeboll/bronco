@@ -46,6 +46,13 @@ namespace bronco {
             void handle_announce(const boost::system::error_code &error, const protocol::Announce &announce);
 
             /**
+             * Start communication with server to request more peers
+             * \param error Possible error occurring in connect operation
+             * \param announce Request message
+             */
+            void handle_request(const boost::system::error_code &error, const protocol::Request &request);
+
+            /**
              * Start communication with server to join network when connected
              * \param error Possible error occurring in connect operation
              * \param me Information about the joining peer

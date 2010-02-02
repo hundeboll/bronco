@@ -39,6 +39,15 @@ namespace bronco {
                 return pointer(new peerconnection(io, manager));
             }
 
+            /**
+             * Return hash ID of connected peer
+             * \return Hash of connected peer
+             */
+            std::string peer_hash()
+            {
+                return remote_peer_.peer_hash();
+            }
+
             /* Handle new connections */
             void handle_peer(const bool accept);
             void handle_connect(const boost::system::error_code &error, const protocol::Peer &remote_peer);
@@ -60,6 +69,7 @@ namespace bronco {
         private:
             /* States */
             bool accept_, connected_, started_;
+
             peermanager *manager_;
             protocol::Peer remote_peer_;
     };

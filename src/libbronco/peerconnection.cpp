@@ -19,9 +19,10 @@ void bronco::peerconnection::handle_connect(const boost::system::error_code &err
     if (!error) {
         /* Save info about connected peer */
         remote_peer_ = remote_peer;
+
         /* Handshake */
         protocol::Connect connect;
-        connect.set_peer_hash("connecting peer");
+        connect.set_peer_hash(manager_->me().peer_hash());
         write_message(connect);
 
         /* Wait for reply */
@@ -119,6 +120,7 @@ void bronco::peerconnection::process_message(const protocol::Connect &connect)
 {
         if (accept_) {
             std::cout << "Accepting connection from: " << connect.peer_hash() << std::endl;
+            remote_peer_.set_peer_hash(connect.peer_hash());
             connected_ = true;
         } else {
             std::cout << "Rejecting connection from: " << connect.peer_hash() << std::endl;
@@ -126,7 +128,7 @@ void bronco::peerconnection::process_message(const protocol::Connect &connect)
 
         protocol::Reply reply;
         reply.set_busy(!accept_);
-        reply.set_peer_hash("accepting peer");
+        reply.set_peer_hash(manager_->me().peer_hash());
         write_message(reply);
 }
 
@@ -144,7 +146,7 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
 
             /* Send start */
             protocol::Start start;
-            start.set_peer_hash("connecting peer");
+            start.set_peer_hash(manager_->me().peer_hash());
             write_message(start);
         }
 }
@@ -172,7 +174,7 @@ void bronco::peerconnection::process_message(const protocol::Stop &stop)
 
         /* Send leave packet */
         protocol::Leave leave;
-        leave.set_peer_hash("accepting peer");
+        leave.set_peer_hash(manager_->me().peer_hash());
         write_message(leave);
 }
 

@@ -23,14 +23,13 @@ namespace bronco {
     class peermanager : private boost::noncopyable, public boost::enable_shared_from_this<peermanager> {
         public:
             typedef boost::shared_ptr<peermanager> pointer;
-            typedef int (*print_ptr)(const char *format, ...);
-            print_ptr print;
+            int (*print)(const char *format, ...);
 
             /**
              * Construct manager object to accept and create peer connections
              * \param port Port to listen for peer connections on
              */
-            peermanager(const std::string &url, print_ptr f);
+            peermanager(const std::string &url, int (*f)(const char *format, ...));
 
             /**
              * Wrapper to io_service::run()
@@ -58,7 +57,7 @@ namespace bronco {
                 update_cond_.notify_all();
             }
 
-            void set_print(print_ptr f)
+            void set_print(int (*f)(const char *format, ...))
             {
                 print = f;
             }
@@ -86,6 +85,24 @@ namespace bronco {
                 update_cond_.notify_one();
             }
 
+            /**
+             * Check if more outgoing connections are wanted
+             * \return True if more peers are wanted
+             */
+            bool need_peers()
+            {
+                return  out_peers_.size() < me_.out_conn_max();
+            }
+
+            /**
+             * Provide info about self to peerconnections
+             * \return protocol::Peer holding info about self
+             */
+            const protocol::Peer me()
+            {
+                return me_;
+            }
+
             /** Connect to specified peer
              * \param address IP-address or hostname of remote peer
              * \param port Port on remote peer
@@ -101,7 +118,8 @@ namespace bronco {
             /* Connection */
             parser parsed_url_;
             uint16_t port_;
-            std::vector<peerconnection::pointer> in_peers_, out_peers_;
+            typedef std::vector<peerconnection::pointer> peer_list;
+            peer_list in_peers_, out_peers_;
             static boost::asio::io_service io_;
             boost::asio::ip::tcp::acceptor acceptor_;
             peerconnection::pointer out_conn_, in_conn_;
@@ -145,7 +163,7 @@ namespace bronco {
              * Clean up closed connections
              * \param peers Vector with connections to update
              */
-            size_t update_connections(std::vector<peerconnection::pointer> &peers);
+            size_t update_connections(peer_list &peers);
 
             /**
              * Connect to server to join network
@@ -178,6 +196,41 @@ namespace bronco {
                 tcp::resolver::query query(address, port);
 
                 return resolver.resolve(query);
+            }
+
+            /**
+             * Check if peer already is connected
+             * \param hash Peer hash of peer to check
+             * \return True if already connected
+             */
+            bool peer_connected(const std::string &peer)
+            {
+                /* Don't connect to self */
+                if (peer == me_.peer_hash()) {
+                    return true;
+                }
+
+                typedef peer_list::iterator list_it;
+
+                /* Check ingoing connections */
+                for (list_it it(in_peers_.begin()), end(in_peers_.end()); it != end; ++it)
+                {
+                    if ((*it)->peer_hash() == peer) {
+                        /* Existing connection found */
+                        return true;
+                    }
+                }
+
+                /* Check outgoing connections */
+                for (list_it it(out_peers_.begin()), end(out_peers_.end()); it != end; ++it)
+                {
+                    if ((*it)->peer_hash() == peer) {
+                        /* Existing connection found */
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             /**

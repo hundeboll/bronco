@@ -46,6 +46,7 @@ void bronco::clientconnection::process_type(const size_t type)
 {
     protocol::Announce announce;
     protocol::Peer peer;
+    protocol::Request request;
     protocol::Keepalive keepalive;
     protocol::Leave leave;
 
@@ -54,6 +55,11 @@ void bronco::clientconnection::process_type(const size_t type)
         case protocol::announcetype:
             deserialize(announce);
             process_message(announce);
+            break;
+
+        case protocol::requesttype:
+            deserialize(request);
+            process_message(request);
             break;
 
         case protocol::peertype:
@@ -109,6 +115,18 @@ void bronco::clientconnection::process_message(protocol::Peer &peer)
 
         /* Insert new peer in list */
         peerlist_->assign(peer);
+    } else {
+        std::cerr << "Content id not found" << std::endl;
+    }
+}
+
+void bronco::clientconnection::process_message(protocol::Request &request)
+{
+    /* Fetch right file manager and return list of peers */
+    peerlist_ = srv_->get_peerlist(request.content_id());
+    if (peerlist_ != NULL) {
+        protocol::Peers peers(peerlist_->get_peers(request.spare_peers()));
+        write_message(peers);
     } else {
         std::cerr << "Content id not found" << std::endl;
     }

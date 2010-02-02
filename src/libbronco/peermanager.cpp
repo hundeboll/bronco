@@ -12,7 +12,7 @@ boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
 boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(const std::string &url, print_ptr f)
+bronco::peermanager::peermanager(const std::string &url, int (*f)(const char *format, ...))
     : print(f),
     parsed_url_(url),
     port_(select_port()),
@@ -86,10 +86,17 @@ void bronco::peermanager::updater()
         update_connections(out_peers_);
 
         /* Connect to more if needed */
-        if (out_peers_.size() < me_.out_conn_max()) {
-            /* Request peers in server connection */
+        if (need_peers()) {
+            print("Requesting %d peers from server\n", me_.spare_peers());
 
-            /* Connect to received peers */
+            /* Request peers in server connection */
+            protocol::Request request;
+            request.set_spare_peers(me_.spare_peers());
+            request.set_peer_hash(me_.peer_hash());
+            request.set_content_id(me_.content_id());
+
+            server_conn_->socket().async_connect(*srv_endpoint_,
+                    boost::bind(&serverconnection::handle_request, server_conn_, boost::asio::placeholders::error, request));
         }
     }
 }
@@ -137,6 +144,11 @@ void bronco::peermanager::handle_incoming(const boost::system::error_code &error
 
 void bronco::peermanager::connect_peer(const protocol::Peer &peer)
 {
+    /* Check if we are connecting to self or already connected peers */
+    if (peer_connected(peer.peer_hash())) {
+        return;
+    }
+
     print("Connecting to %s:%s\n", peer.address().c_str(), peer.port().c_str());
     endpoint_it peer_end(resolve_host(peer.address(), peer.port()));
 
@@ -149,10 +161,10 @@ void bronco::peermanager::connect_peer(const protocol::Peer &peer)
     out_peers_.push_back(out_conn_);
 }
 
-size_t bronco::peermanager::update_connections(std::vector<peerconnection::pointer> &peers)
+size_t bronco::peermanager::update_connections(peer_list &peers)
 {
     /* Remove objects with closed sockets */
-    typedef std::vector<peerconnection::pointer>::iterator peer_it;
+    typedef peer_list::iterator peer_it;
     for (peer_it it(peers.begin()), end(peers.end()); it != end; it++) {
         if (!(*it)->socket().is_open()) {
             std::cout << "Removing connection" << std::endl;
