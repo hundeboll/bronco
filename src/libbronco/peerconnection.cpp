@@ -119,11 +119,11 @@ void bronco::peerconnection::process_type(const size_t type)
 void bronco::peerconnection::process_message(const protocol::Connect &connect)
 {
         if (accept_) {
-            std::cout << "Accepting connection from: " << connect.peer_hash() << std::endl;
+            manager_->print("Accepting %s\n", connect.peer_hash().c_str());
             remote_peer_.set_peer_hash(connect.peer_hash());
             connected_ = true;
         } else {
-            std::cout << "Rejecting connection from: " << connect.peer_hash() << std::endl;
+            manager_->print("Rejecting %s\n", connect.peer_hash().c_str());
         }
 
         protocol::Reply reply;
@@ -136,12 +136,12 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
 {
         if (reply.busy()) {
             /* Rejected, closing connection */
-            std::cout << "Rejected by " << reply.peer_hash() << std::endl;
+            manager_->print("Rejected by %s\n", reply.peer_hash().c_str());
             close_socket();
             manager_->update_connections();
         } else {
             /* Accepted, proceeding */
-            std::cout << "Accepted by " << reply.peer_hash() << std::endl;
+            manager_->print("Accepted by %s\n", reply.peer_hash().c_str());
             connected_ = true;
 
             /* Send start */
@@ -153,36 +153,36 @@ void bronco::peerconnection::process_message(const protocol::Reply &reply)
 
 void bronco::peerconnection::process_message(const protocol::Start &start)
 {
-        std::cout << "Received start from: " << start.peer_hash() << std::endl;
+    manager_->print("Received start from %s\n", start.peer_hash().c_str());
 
-        /* Send data packet */
-        protocol::Data data;
-        data.set_generation(1);
-        data.set_packet(std::string(6400, '\0'));
-        write_message(data);
+    /* Send data packet */
+    protocol::Data data;
+    data.set_generation(1);
+    data.set_packet(std::string(6400, '\0'));
+    write_message(data);
 }
 
 void bronco::peerconnection::process_message(const protocol::Data &data)
 {
-        /* Send stop */
-        write_message(data);
+    /* Send stop */
+    write_message(data);
 }
 
 void bronco::peerconnection::process_message(const protocol::Stop &stop)
 {
-        std::cout << "Received stop from: " << stop.peer_hash() << std::endl;
+    manager_->print("Received stop from %s\n", stop.peer_hash().c_str());
 
-        /* Send leave packet */
-        protocol::Leave leave;
-        leave.set_peer_hash(manager_->me().peer_hash());
-        write_message(leave);
+    /* Send leave packet */
+    protocol::Leave leave;
+    leave.set_peer_hash(manager_->me().peer_hash());
+    write_message(leave);
 }
 
 void bronco::peerconnection::process_message(const protocol::Leave &leave)
 {
-        std::cout << "Received leave from: " << leave.peer_hash() << std::endl;
+    manager_->print("Received leave from %s\n", leave.peer_hash().c_str());
 
-        /* Close socket */
-        close_socket();
-        manager_->update_connections();
+    /* Close socket */
+    close_socket();
+    manager_->update_connections();
 }
