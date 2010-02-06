@@ -18,24 +18,21 @@ bronco::peermanager::peermanager(const std::string &url,
         int (*f)(const char *format, ...))
     : print(f),
     parsed_url_(url),
-    port_(select_port()),
-    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_)),
+    acceptor_(io_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), cfg->port)),
     stop_(false)
 {
-    print("Bronco peer listening on port %s\n", utils::to_string(port_).c_str());
+    print("Bronco peer listening on port %s\n", utils::to_string(cfg->port).c_str());
 
     print("Scheme: %s\n", parsed_url_.scheme().c_str());
     print("Host: %s\n", parsed_url_.host().c_str());
     print("Port: %s\n", parsed_url_.port().c_str());
-    print("Content id: %s\n", parsed_url_.content_id().c_str());
 
     /* Setup configuration */
-    me_.set_in_conn_max(5);
-    me_.set_out_conn_max(3);
-    me_.set_spare_peers(2);
-    me_.set_port(utils::to_string(port_));
+    me_.set_in_conn_max(cfg->max_peers_in);
+    me_.set_out_conn_max(cfg->max_peers_out);
+    me_.set_spare_peers(cfg->spare_peers);
+    me_.set_port(utils::to_string(cfg->port));
     me_.set_peer_hash(me_.port());
-    me_.set_content_id(parsed_url_.content_id());
 
     /* Open port for listening */
     listen();
@@ -118,7 +115,7 @@ void bronco::peermanager::keepalive()
 
         /* Send keep-alive to server */
         keepalive.set_peer_hash(me_.peer_hash());
-        keepalive.set_content_id(content_id_);
+        keepalive.set_content_id(me_.content_id());
         server_conn_->send(*srv_endpoint_, keepalive);
     }
 }
