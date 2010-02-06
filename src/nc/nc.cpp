@@ -59,16 +59,20 @@ int main(int argc, char **argv)
     mw = initscr();
     noecho();
     curs_set(0);
-    cbreak();
+    halfdelay(5);
     scrollok(mw, TRUE);
 
     /* Create peer manager */
-    manager_ptr = new bronco::peermanager(argv[1], &info_printf);
-    manager_ptr->connect();
+    struct bronco::peermanager::peer_config c = {10, 10, 5, bronco::peermanager::select_port()};
+    struct bronco::peermanager::nc_parameters p = {"bin/bronco-nc", 512, 6400};
 
-    /* Start io_service */
-    manager_ptr->run();
+    manager_ptr = new bronco::peermanager(argv[1], &c, &p, &info_printf);
 
+    /* Screen update loop */
+    while (1) {
+        int key = wgetch(mw);
+    }
+    
     /* Finalize ncurses */
     cleanup_and_exit(EXIT_SUCCESS);
 
