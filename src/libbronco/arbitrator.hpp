@@ -13,10 +13,16 @@ namespace bronco {
         public:
             typedef boost::shared_ptr<arbitrator> pointer;
 
-            arbitrator(const std::string &path);
+            arbitrator(protocol::Config &config, const std::string &path)
+                : coder_(config, path)
+            {}
+
+            arbitrator(protocol::Config &config)
+                : coder_(config)
+            {}
 
         private:
-            coder::pointer coder_ptr_;
+            coder coder_;
 
     };
 } // namespace bronco

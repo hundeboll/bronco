@@ -117,6 +117,9 @@ void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 void bronco::serverconnection::process_message(const protocol::Config &config)
 {
     manager_->print("Received configuration\n");
+
+    /* Save config and start arbitrator */
+    manager_->set_config(config);
 }
 
 void bronco::serverconnection::process_message(const protocol::Peers &peers)

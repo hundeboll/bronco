@@ -10,7 +10,7 @@
 #include "coder.hpp"
 #include "utils.hpp"
 
-bronco::coder::coder(const std::string &path, protocol::Config &config)
+bronco::coder::coder(protocol::Config &config, const std::string &path)
     : generation_(0),
     random_(rand),
     config_(config)

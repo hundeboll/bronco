@@ -18,28 +18,17 @@
 namespace bronco {
     class coder : private boost::noncopyable {
         public:
-            typedef boost::shared_ptr<coder> pointer;
-
             /**
              * Constructor to setup encoder
              * \param path Path to file to encode
              */
-            coder(const std::string &path, protocol::Config &config);
+            coder(protocol::Config &config, const std::string &path);
 
             /**
              * Constructor to setup decoder and recoder
              * \param config Configuration stores en protobuf message
              */
             coder(protocol::Config &config);
-
-            /**
-             * Provide config
-             * \return Config for file
-             */
-            protocol::Config & config()
-            {
-                return config_;
-            }
 
         private:
             /* Coding */
