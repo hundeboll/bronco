@@ -41,7 +41,13 @@ namespace bronco {
                     snprintf(hex_hash+i*2, 3, "%02x", hash_ptr[i]);
                 }
 
-                return std::string(hex_hash);
+                std::string hash(hex_hash);
+
+                /* Clean up */
+                delete [] hash_ptr;
+                delete [] hex_hash;
+
+                return hash;
             }
 
     };
