@@ -43,10 +43,10 @@ namespace bronco {
              * \param announce Announce message received from peer
              * \return Pointer to created peerlist
              */
-            peerlist::pointer new_peerlist(const protocol::Announce &announce)
+            peerlist::pointer new_peerlist(const protocol::Config &config)
             {
                 /* Create peerlist */
-                peerlist::pointer pl(new peerlist(announce));
+                peerlist::pointer pl(new peerlist(config));
 
                 /* Save peerlist */
                 peerlists_.insert(std::pair<std::string, peerlist::pointer>(pl->list_hash(), pl));

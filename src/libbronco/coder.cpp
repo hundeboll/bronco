@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <time.h>
 #include <cstdlib>
 #include <stdexcept>
 
 #include "coder.hpp"
+#include "utils.hpp"
 
 bronco::coder::coder(const std::string &path, protocol::Config &config)
     : generation_(0),
@@ -44,15 +46,11 @@ bronco::coder::coder(protocol::Config &config)
     size_t vector_size = Gf2::SumFunction(decoders_, std::mem_fun_ref(&Gf2::Decoder::VectorBufferSize));
 
     /* Setup buffers */
-    file_buf_na_.reset(new char[file_size + align_boundary]);
-    vector_buf_na_.reset(new char[vector_size + align_boundary]);
-
-    /* Align buffers */
-    file_buf_ = find_aligned(file_buf_na_.get());
-    vector_buf_ = find_aligned(vector_buf_na_.get());
+    file_buf_.reset(new char[file_size]);
+    vector_buf_.reset(new char[vector_size]);
 
     /* Add buffers */
-    Gf2::AddBuffer(decoders_, file_buf_, vector_buf_);
+    Gf2::AddBuffer(decoders_, file_buf_.get(), vector_buf_.get());
 }
 
 void bronco::coder::open_file(const std::string &path)
@@ -69,7 +67,10 @@ void bronco::coder::open_file(const std::string &path)
 
     /* Read file */
     infile.seekg(0, std::ios::beg);
-    file_buf_na_.reset(new char[file_size + align_boundary]);
-    file_buf_ = find_aligned(file_buf_na_.get());
-    infile.read(file_buf_, file_size);
+    file_buf_.reset(new char[file_size]);
+    infile.read(file_buf_.get(), file_size);
+
+    /* Compute check sum */
+    std::string hash = utils::sha1(file_buf_.get(), file_size);
+    std::cout << hash << std::endl;
 }

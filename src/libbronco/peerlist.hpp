@@ -16,7 +16,7 @@ namespace bronco {
         public:
             typedef boost::shared_ptr<peerlist> pointer;
 
-            peerlist( const protocol::Announce &announce);
+            peerlist(const protocol::Config &config);
 
             /**
              * Get list identifier
@@ -92,7 +92,7 @@ namespace bronco {
             protocol::Peers get_random_peers(const size_t no);
 
         private:
-            protocol::Announce announce_;
+            protocol::Config config_;
             std::string list_hash_;
 
             typedef std::pair<protocol::Peer, uint64_t> list_peer;

@@ -1,6 +1,6 @@
 project(bronco)
 cmake_minimum_required(VERSION 2.8)
-add_definitions(-pedantic -ggdb -Wall -ansi -msse2 -O2 -ftree-vectorize -pipe)
+add_definitions(-pedantic -ggdb -Wall -Werror -ansi -msse2 -O2 -ftree-vectorize -pipe -funsigned-char)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 

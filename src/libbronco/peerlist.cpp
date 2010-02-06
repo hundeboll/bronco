@@ -2,8 +2,8 @@
 
 #include "peerlist.hpp"
 
-bronco::peerlist::peerlist(const protocol::Announce &announce)
-    : announce_(announce)
+bronco::peerlist::peerlist(const protocol::Config &config)
+    : config_(config)
 {
     /* Initialize random generator used to select peers */
     srand(time(0));
@@ -14,7 +14,7 @@ bronco::peerlist::peerlist(const protocol::Announce &announce)
 
 void bronco::peerlist::create_id()
 {
-    list_hash_ = announce_.file_hash();
+    list_hash_ = config_.file_hash();
 }
 
 protocol::Peers bronco::peerlist::get_peers(const size_t no)

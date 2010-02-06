@@ -17,8 +17,23 @@
 #include "peerconnection.hpp"
 #include "serverconnection.hpp"
 #include "parser.hpp"
+#include "coder.hpp"
+
 
 namespace bronco {
+    struct nc_parameters {
+        std::string file_path;
+        size_t generation_size;
+        size_t packet_size;
+    };
+
+    struct peer_config {
+        size_t max_peers_in;
+        size_t max_peers_out;
+        size_t spare_peers;
+        uint16_t port;
+    };
+
     class peermanager : private boost::noncopyable {
         public:
             typedef boost::shared_ptr<peermanager> pointer;
@@ -28,7 +43,10 @@ namespace bronco {
              * Construct manager object to accept and create peer connections
              * \param port Port to listen for peer connections on
              */
-            peermanager(const std::string &url, int (*f)(const char *format, ...));
+            peermanager(const std::string &url,
+                    const peer_config *cfg,
+                    const nc_parameters *par = NULL,
+                    int (*f)(const char *format, ...) = &printf);
 
             /**
              * Wrapper to io_service::run()
@@ -108,11 +126,6 @@ namespace bronco {
              */
             void connect_peer(const protocol::Peer &peer);
 
-            /**
-             * Join network by connection to server
-             */
-            void connect();
-
         private:
             /* Connection */
             parser parsed_url_;
@@ -129,6 +142,8 @@ namespace bronco {
             /* Coding */
             protocol::Peer me_;
             std::string content_id_;
+            protocol::Config config_;
+            coder *coder_;
 
             /* Thread */
             bool stop_;
@@ -170,11 +185,6 @@ namespace bronco {
              * \param port Port of server
              */
             void connect_server();
-
-            /**
-             * Connect to server and announce new file
-             */
-            void announce_server(const protocol::Announce &announce);
 
             /**
              * Connect to server and send leave

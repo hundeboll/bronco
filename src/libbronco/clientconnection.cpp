@@ -86,14 +86,11 @@ void bronco::clientconnection::process_type(const size_t type)
 void bronco::clientconnection::process_message(const protocol::Announce &announce)
 {
     /* Create new file manager */
-    peerlist_ = srv_->new_peerlist(announce);
+    peerlist_ = srv_->new_peerlist(announce.config());
 
     /* Assign peer to new list */
-    protocol::Peer peer;
+    protocol::Peer peer = announce.peer();
     peer.set_address(socket().remote_endpoint().address().to_string());
-    peer.set_port(announce.peer_port());
-    peer.set_peer_hash(announce.peer_hash());
-    peer.set_complete(true);
     peerlist_->assign(peer);
 
     /* Return new list hash */

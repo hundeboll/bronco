@@ -12,7 +12,10 @@ boost::mutex bronco::peermanager::update_mutex_;
 boost::condition_variable bronco::peermanager::update_cond_;
 boost::asio::io_service bronco::peermanager::io_;
 
-bronco::peermanager::peermanager(const std::string &url, int (*f)(const char *format, ...))
+bronco::peermanager::peermanager(const std::string &url,
+        const peer_config *cfg,
+        const nc_parameters *par,
+        int (*f)(const char *format, ...))
     : print(f),
     parsed_url_(url),
     port_(select_port()),
@@ -44,16 +47,17 @@ bronco::peermanager::peermanager(const std::string &url, int (*f)(const char *fo
     /* Resolve server host */
     server_conn_.reset(new serverconnection(io_, this));
     srv_endpoint_ = resolve_host(parsed_url_.host(), parsed_url_.port());
-}
 
-void bronco::peermanager::connect()
-{
-    if (parsed_url_.scheme() == "abronco") {
-        /* Prepare file for sharing and announce to server */
-        announce_file(parsed_url_.content_id());
+    /* Start io_service */
+    boost::thread t3(boost::bind(&peermanager::run, this));
+
+    /* Start connecting */
+    if (cfg) {
+        config_.set_generation_size(par->generation_size);
+        config_.set_packet_size(par->packet_size);
+        announce_file(par->file_path);
     } else {
-        /* Store dontent id and join network */
-        content_id_ = parsed_url_.content_id();
+        me_.set_content_id(parsed_url_.content_id());
         connect_server();
     }
 }
@@ -61,13 +65,15 @@ void bronco::peermanager::connect()
 void bronco::peermanager::announce_file(const std::string &path)
 {
     /* Load file */
+    coder_ = new coder(path, config_);
+
     protocol::Announce announce;
-    announce.set_file_hash(path);
-    announce.set_peer_hash(me_.peer_hash());
-    announce.set_peer_port(me_.port());
+    announce.mutable_peer()->CopyFrom(me_);
+    announce.mutable_config()->CopyFrom(config_);
 
     /* Send announce to server */
-    announce_server(announce);
+    server_conn_->socket().async_connect(*srv_endpoint_,
+            boost::bind(&serverconnection::handle_announce, server_conn_, boost::asio::placeholders::error, announce));
 }
 
 void bronco::peermanager::updater()
@@ -180,10 +186,4 @@ void bronco::peermanager::connect_server()
 {
     server_conn_->socket().async_connect(*srv_endpoint_,
             boost::bind(&serverconnection::handle_connect, server_conn_, boost::asio::placeholders::error, me_));
-}
-
-void bronco::peermanager::announce_server(const protocol::Announce &announce)
-{
-    server_conn_->socket().async_connect(*srv_endpoint_,
-            boost::bind(&serverconnection::handle_announce, server_conn_, boost::asio::placeholders::error, announce));
 }

@@ -32,6 +32,15 @@ namespace bronco {
              */
             coder(protocol::Config &config);
 
+            /**
+             * Provide config
+             * \return Config for file
+             */
+            protocol::Config & config()
+            {
+                return config_;
+            }
+
         private:
             /* Coding */
             enum { align_boundary = 16 };
@@ -39,8 +48,7 @@ namespace bronco {
             Gf2::RandomGenerator random_;
             std::vector<Gf2::Encoder> encoders_;
             std::vector<Gf2::Decoder> decoders_;
-            boost::shared_array<char> vector_buf_na_, file_buf_na_;
-            char *vector_buf_, *file_buf_;
+            boost::shared_array<char> vector_buf_, file_buf_;
 
             protocol::Config config_;
 
@@ -49,20 +57,6 @@ namespace bronco {
              * \param path File to open
              */
             void open_file(const std::string &path);
-
-            /**
-             * Find pointer to aligned address
-             * \return Aligned pointer
-             */
-            char* find_aligned(char* na)
-            {
-                while ((reinterpret_cast<intptr_t>(na) % align_boundary) != 0)
-                    ++na;
-
-                return na;
-            }
-
-
     };
 } // namespace bronco
 
