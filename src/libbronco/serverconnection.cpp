@@ -109,7 +109,7 @@ void bronco::serverconnection::process_type(const size_t type)
 
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
-    manager_->print("Received confirm on announce\n");
+    manager_->print("File announced\n");
     manager_->set_content_id(confirm.list_hash());
     close_socket();
 }

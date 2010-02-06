@@ -56,7 +56,7 @@ namespace bronco {
                 /* Create leave message */
                 protocol::Leave leave;
                 leave.set_peer_hash(me_.peer_hash());
-                leave.set_content_id(content_id_);
+                leave.set_content_id(me_.content_id());
                 server_conn_->send(*srv_endpoint_, leave);
 
                 /* Now close down */
@@ -73,7 +73,11 @@ namespace bronco {
 
             void set_content_id(const std::string &id)
             {
-                content_id_ = id;
+                me_.set_content_id(id);
+                print("URL: bronco://%s:%d/%s\n",
+                        server_conn_->socket().remote_endpoint().address().to_string().c_str(),
+                        server_conn_->socket().remote_endpoint().port(),
+                        id.c_str());
             }
 
             /**
@@ -133,7 +137,6 @@ namespace bronco {
 
             /* Coding */
             protocol::Peer me_;
-            std::string content_id_;
             protocol::Config config_;
             coder *coder_;
 
