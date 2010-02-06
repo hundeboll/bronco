@@ -17,7 +17,7 @@
 #include "peerconnection.hpp"
 #include "serverconnection.hpp"
 #include "parser.hpp"
-#include "coder.hpp"
+#include "arbitrator.hpp"
 
 
 namespace bronco {
@@ -56,7 +56,7 @@ namespace bronco {
                 /* Create leave message */
                 protocol::Leave leave;
                 leave.set_peer_hash(me_.peer_hash());
-                leave.set_content_id(content_id_);
+                leave.set_content_id(me_.content_id());
                 server_conn_->send(*srv_endpoint_, leave);
 
                 /* Now close down */
@@ -66,14 +66,39 @@ namespace bronco {
                 update_cond_.notify_all();
             }
 
+            /**
+             * Set function to use when printing
+             * \param f Function pointer with printf-like syntax
+             */
             void set_print(int (*f)(const char *format, ...))
             {
                 print = f;
             }
 
+            /**
+             * Save content id generated on server
+             * \param id Received content id
+             */
             void set_content_id(const std::string &id)
             {
-                content_id_ = id;
+                me_.set_content_id(id);
+                print("URL: bronco://%s:%d/%s\n",
+                        server_conn_->socket().remote_endpoint().address().to_string().c_str(),
+                        server_conn_->socket().remote_endpoint().port(),
+                        id.c_str());
+            }
+
+            /**
+             * Save received configuration start arbitrator
+             * \param config Configuration received from server
+             */
+            void set_config(const protocol::Config &config)
+            {
+                /* Save config */
+                config_.CopyFrom(config);
+
+                /* Start coder */
+                arbitrator_ = new arbitrator(config_);
             }
 
             /**
@@ -133,9 +158,8 @@ namespace bronco {
 
             /* Coding */
             protocol::Peer me_;
-            std::string content_id_;
             protocol::Config config_;
-            coder *coder_;
+            arbitrator *arbitrator_;
 
             /* Thread */
             bool stop_;

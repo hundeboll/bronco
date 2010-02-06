@@ -109,7 +109,7 @@ void bronco::serverconnection::process_type(const size_t type)
 
 void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 {
-    manager_->print("Received confirm on announce\n");
+    manager_->print("File announced\n");
     manager_->set_content_id(confirm.list_hash());
     close_socket();
 }
@@ -117,6 +117,9 @@ void bronco::serverconnection::process_message(const protocol::Confirm &confirm)
 void bronco::serverconnection::process_message(const protocol::Config &config)
 {
     manager_->print("Received configuration\n");
+
+    /* Save config and start arbitrator */
+    manager_->set_config(config);
 }
 
 void bronco::serverconnection::process_message(const protocol::Peers &peers)

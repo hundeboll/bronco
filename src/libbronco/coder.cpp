@@ -10,7 +10,7 @@
 #include "coder.hpp"
 #include "utils.hpp"
 
-bronco::coder::coder(const std::string &path, protocol::Config &config)
+bronco::coder::coder(protocol::Config &config, const std::string &path)
     : generation_(0),
     random_(rand),
     config_(config)
@@ -71,6 +71,5 @@ void bronco::coder::open_file(const std::string &path)
     infile.read(file_buf_.get(), file_size);
 
     /* Compute check sum */
-    std::string hash = utils::sha1(file_buf_.get(), file_size);
-    std::cout << hash << std::endl;
+    config_.set_file_hash(utils::sha1(file_buf_.get(), file_size));
 }

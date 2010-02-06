@@ -62,7 +62,7 @@ bronco::peermanager::peermanager(const std::string &url,
 void bronco::peermanager::announce_file(const std::string &path)
 {
     /* Load file */
-    coder_ = new coder(path, config_);
+    arbitrator_ = new arbitrator(config_, path);
 
     protocol::Announce announce;
     announce.mutable_peer()->CopyFrom(me_);

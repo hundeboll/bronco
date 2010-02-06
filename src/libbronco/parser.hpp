@@ -12,7 +12,7 @@ namespace bronco {
              */
             parser(const std::string &url)
                 : url_(url),
-                url_regex_("(bronco):\\/\\/((\\w+\\.)*(\\w*))(:(\\d+))?\\/([\\w\\d]+\\/?)+")
+                url_regex_("(bronco):\\/\\/((\\w+\\.)*(\\w*))(:(\\d+))?\\/([\\w\\d]+\\/?)?")
             {
                 /* Validate URL */
                 if (!boost::regex_match(url_.c_str(), pieces_, url_regex_))
