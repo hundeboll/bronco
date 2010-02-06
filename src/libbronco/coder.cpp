@@ -71,6 +71,5 @@ void bronco::coder::open_file(const std::string &path)
     infile.read(file_buf_.get(), file_size);
 
     /* Compute check sum */
-    std::string hash = utils::sha1(file_buf_.get(), file_size);
-    std::cout << hash << std::endl;
+    config_.set_file_hash(utils::sha1(file_buf_.get(), file_size));
 }
