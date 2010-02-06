@@ -101,8 +101,8 @@ int main(int argc, char **argv)
     scrollok(info_win, TRUE);
 
     /* Create peer manager */
-    struct bronco::peermanager::peer_config c = {10, 10, 5, bronco::peermanager::select_port()};
-    struct bronco::peermanager::nc_parameters p = {"bin/bronco-nc", 512, 6400};
+    struct bronco::peermanager::peer_config c = {10, 10, 5, "localhost", bronco::peermanager::select_port()};
+    struct bronco::peermanager::nc_parameters p = {"bin/bronco-nc", 512, 400};
 
     manager_ptr = new bronco::peermanager(argv[1], &c, &p, &info_printf);
 

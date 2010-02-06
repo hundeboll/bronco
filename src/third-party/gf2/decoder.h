@@ -1,18 +1,29 @@
 #ifndef GF2_DECODER_H
 #define GF2_DECODER_H
 
+#include <boost/iostreams/device/mapped_file.hpp>
+
 #include <vector>
+#include <fstream>
 
 namespace Gf2
 {  
     class Decoder
     {
     public:
+        boost::iostreams::mapped_file_sink buffer_file;
+        boost::iostreams::mapped_file_sink vector_file;
 
 	/**
 	 * Constructs a new decoder object
 	 */
 	Decoder(size_t aPackets, size_t aPacketSize);
+
+    ~Decoder()
+    {
+        buffer_file.close();
+        vector_file.close();
+    }
 
 	/**
 	 * Returns the number of packets used. This number also

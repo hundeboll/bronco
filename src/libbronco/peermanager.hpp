@@ -33,6 +33,7 @@ namespace bronco {
                 size_t max_peers_in;
                 size_t max_peers_out;
                 size_t spare_peers;
+                std::string address;
                 uint16_t port;
             };
 
@@ -98,7 +99,7 @@ namespace bronco {
                 config_.CopyFrom(config);
 
                 /* Start coder */
-                arbitrator_ = new arbitrator(config_);
+                arbitrator_ = new arbitrator(config_, this);
             }
 
             /**

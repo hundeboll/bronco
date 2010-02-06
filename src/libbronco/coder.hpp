@@ -16,19 +16,35 @@
 #include "gf2/gf2_common.h"
 
 namespace bronco {
+    class peermanager;
     class coder : private boost::noncopyable {
         public:
             /**
              * Constructor to setup encoder
              * \param path Path to file to encode
              */
-            coder(protocol::Config &config, const std::string &path);
+            coder(protocol::Config &config, const std::string &path, peermanager *manager);
 
             /**
              * Constructor to setup decoder and recoder
              * \param config Configuration stores en protobuf message
              */
-            coder(protocol::Config &config);
+            coder(protocol::Config &config, peermanager *manager);
+
+            /**
+             * Tell progress of download
+             */
+            uint16_t progress()
+            {
+                if (encoders_.size() != 0) {
+                    return 100;
+                }
+            }
+
+            protocol::Config get_config()
+            {
+                return config_;
+            }
 
         private:
             /* Coding */
@@ -40,12 +56,15 @@ namespace bronco {
             boost::shared_array<char> vector_buf_, file_buf_;
 
             protocol::Config config_;
+            peermanager *manager_;
 
             /**
              * Open file, read file size and read data
              * \param path File to open
              */
             void open_file(const std::string &path);
+
+            void open_parts();
     };
 } // namespace bronco
 

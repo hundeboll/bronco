@@ -32,7 +32,11 @@ bronco::peermanager::peermanager(const std::string &url,
     me_.set_out_conn_max(cfg->max_peers_out);
     me_.set_spare_peers(cfg->spare_peers);
     me_.set_port(utils::to_string(cfg->port));
-    me_.set_peer_hash(me_.port());
+
+    std::string seed(utils::to_string(cfg->port));
+    seed.append(cfg->address);
+    seed.append(utils::to_string(time(0)));
+    me_.set_peer_hash(utils::sha1(seed.c_str(), seed.size()));
 
     /* Open port for listening */
     listen();
@@ -52,6 +56,7 @@ bronco::peermanager::peermanager(const std::string &url,
     if (cfg) {
         config_.set_generation_size(par->generation_size);
         config_.set_packet_size(par->packet_size);
+        config_.set_file_name(par->file_path);
         announce_file(par->file_path);
     } else {
         me_.set_content_id(parsed_url_.content_id());
@@ -62,7 +67,12 @@ bronco::peermanager::peermanager(const std::string &url,
 void bronco::peermanager::announce_file(const std::string &path)
 {
     /* Load file */
-    arbitrator_ = new arbitrator(config_, path);
+    print("Opening %s\n", path.c_str());
+    arbitrator_ = new arbitrator(config_, path, this);
+    config_.CopyFrom(arbitrator_->get_config());
+
+    print("File: %s (%d bytes)\n", config_.file_hash().c_str(), config_.file_size());
+    arbitrator arb(config_, this);
 
     protocol::Announce announce;
     announce.mutable_peer()->CopyFrom(me_);
