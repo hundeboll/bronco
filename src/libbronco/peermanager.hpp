@@ -21,21 +21,21 @@
 
 
 namespace bronco {
-    struct nc_parameters {
-        std::string file_path;
-        size_t generation_size;
-        size_t packet_size;
-    };
-
-    struct peer_config {
-        size_t max_peers_in;
-        size_t max_peers_out;
-        size_t spare_peers;
-        uint16_t port;
-    };
-
     class peermanager : private boost::noncopyable {
         public:
+            struct nc_parameters {
+                std::string file_path;
+                size_t generation_size;
+                size_t packet_size;
+            };
+
+            struct peer_config {
+                size_t max_peers_in;
+                size_t max_peers_out;
+                size_t spare_peers;
+                uint16_t port;
+            };
+
             typedef boost::shared_ptr<peermanager> pointer;
             int (*print)(const char *format, ...);
 
@@ -47,14 +47,6 @@ namespace bronco {
                     const peer_config *cfg,
                     const nc_parameters *par = NULL,
                     int (*f)(const char *format, ...) = &printf);
-
-            /**
-             * Wrapper to io_service::run()
-             */
-            void run()
-            {
-                io_.run();
-            }
 
             /**
              * Stop io services and unlock mutex to close object
@@ -88,7 +80,7 @@ namespace bronco {
              * Select random port
              * \return Selected port
              */
-            uint16_t select_port()
+            static uint16_t select_port()
             {
                 srand(time(0));
                 return (rand() % 1024) + 49151;
@@ -240,6 +232,14 @@ namespace bronco {
                 }
 
                 return false;
+            }
+
+            /**
+             * Wrapper to io_service::run()
+             */
+            void run()
+            {
+                io_.run();
             }
 
             /**
