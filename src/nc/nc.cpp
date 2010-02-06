@@ -60,6 +60,7 @@ int main(int argc, char **argv)
     noecho();
     curs_set(0);
     halfdelay(5);
+    keypad();
     scrollok(mw, TRUE);
 
     /* Create peer manager */
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
 
     /* Screen update loop */
     while (1) {
-        int key = wgetch(mw);
+        wgetch(mw);
     }
     
     /* Finalize ncurses */
