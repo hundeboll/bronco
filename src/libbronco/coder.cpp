@@ -27,6 +27,7 @@ bronco::coder::coder(protocol::Config &config, const std::string &path, peermana
             config_.generation_size(),
             config_.packet_size(),
             encoders_);
+    Gf2::AddBuffer(encoders_, file_buf_.data());
     config_.set_generation_count(encoders_.size());
 }
 
@@ -52,22 +53,17 @@ void bronco::coder::open_file(const std::string &path)
 {
     /* Open file */
     manager_->print("Opening %s\n", path.c_str());
-    std::ifstream infile(path.c_str(), std::ios::binary | std::ios::ate);
-    if (!infile.is_open()) {
-        throw std::runtime_error("Unable to open file");
+
+    boost::iostreams::mapped_file_params mparams(path);
+    mparams.mode = BOOST_IOS::in;
+    file_buf_.open(mparams);
+    if (!file_buf_.is_open()) {
+        throw std::runtime_error("Unable to open source");
     }
 
-    /* Read and save file size */
-    size_t file_size(infile.tellg());
-    config_.set_file_size(file_size);
-
-    /* Read file */
-    infile.seekg(0, std::ios::beg);
-    file_buf_.reset(new char[file_size]);
-    infile.read(file_buf_.get(), file_size);
-
-    /* Compute check sum */
-    config_.set_file_hash(utils::sha1(file_buf_.get(), file_size));
+    /* Read size and compute check sum */
+    config_.set_file_size(file_buf_.size());
+    config_.set_file_hash(utils::sha1(file_buf_.data(), file_buf_.size()));
 }
 
 void bronco::coder::open_parts()

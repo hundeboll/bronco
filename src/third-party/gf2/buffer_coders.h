@@ -75,7 +75,7 @@ namespace Gf2
 
 
 
-    inline void AddBuffer(std::vector<Encoder> &aEncoders, char *aData)
+    inline void AddBuffer(std::vector<Encoder> &aEncoders, const char *aData)
     {
 	assert(aData != 0);
 	assert(aEncoders.size() > 0);

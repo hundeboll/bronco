@@ -50,12 +50,12 @@ namespace Gf2
 	 * as many packets as the generation size specifies must be
 	 * added.
 	 */
-	void AddBuffer(char *aPacket);
+	void AddBuffer(const char *aPacket);
 
 	/**
 	 * Adds a buffer containing a number of "orginal" data packets.
 	 */
-	void AddBuffer(char* aBuffer, size_t aPacketCount);
+	void AddBuffer(const char* aBuffer, size_t aPacketCount);
 
 	/**
 	 * Gets a encoded packet.
@@ -76,7 +76,7 @@ namespace Gf2
 	size_t iPacketSize;
 	size_t iVectorSize;
 	
-	std::vector<char*> iPacketBuffer;
+	std::vector<const char*> iPacketBuffer;
     };
 
 

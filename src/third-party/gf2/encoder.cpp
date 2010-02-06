@@ -31,7 +31,7 @@ size_t Gf2::Encoder::VectorSize() const
     return iVectorSize;
 }
 
-void Gf2::Encoder::AddBuffer(char *aPacket)
+void Gf2::Encoder::AddBuffer(const char *aPacket)
 {
     assert(aPacket != 0);
     assert(iPacketBuffer.size() <= iPackets);
@@ -39,7 +39,7 @@ void Gf2::Encoder::AddBuffer(char *aPacket)
     iPacketBuffer.push_back(aPacket);
 }
 
-void Gf2::Encoder::AddBuffer(char* aBuffer, size_t aPacketCount)
+void Gf2::Encoder::AddBuffer(const char* aBuffer, size_t aPacketCount)
 {
     assert(aBuffer != 0);
     assert(aPacketCount <= iPackets);

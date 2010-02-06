@@ -31,6 +31,13 @@ namespace bronco {
              */
             coder(protocol::Config &config, peermanager *manager);
 
+            ~coder()
+            {
+                if (file_buf_.is_open()) {
+                    file_buf_.close();
+                }
+            }
+
             /**
              * Tell progress of download
              */
@@ -53,7 +60,8 @@ namespace bronco {
             Gf2::RandomGenerator random_;
             std::vector<Gf2::Encoder> encoders_;
             std::vector<Gf2::Decoder> decoders_;
-            boost::shared_array<char> vector_buf_, file_buf_;
+            boost::shared_array<char> vector_buf_;
+            boost::iostreams::mapped_file_source file_buf_;
 
             protocol::Config config_;
             peermanager *manager_;
