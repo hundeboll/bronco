@@ -5,6 +5,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
@@ -65,6 +66,7 @@ namespace bronco {
                 io_.stop();
                 stop_ = true;
                 update_cond_.notify_all();
+                io_thread.join();
             }
 
             /**
@@ -167,6 +169,7 @@ namespace bronco {
             typedef boost::mutex::scoped_lock scoped_lock;
             static boost::mutex update_mutex_;
             static boost::condition_variable update_cond_;
+            boost::thread io_thread;
 
             /**
              * Clean up closed connections and create new if needed

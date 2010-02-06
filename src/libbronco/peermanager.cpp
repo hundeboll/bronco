@@ -1,7 +1,6 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
 #include <iostream>
 
 #include "peermanager.hpp"
@@ -50,7 +49,7 @@ bronco::peermanager::peermanager(const std::string &url,
     srv_endpoint_ = resolve_host(parsed_url_.host(), parsed_url_.port());
 
     /* Start io_service */
-    boost::thread t3(boost::bind(&peermanager::run, this));
+    io_thread = boost::thread(boost::bind(&peermanager::run, this));
 
     /* Start connecting */
     if (cfg) {
