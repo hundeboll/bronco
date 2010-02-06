@@ -1,6 +1,10 @@
 /* vim: set sw=4 sts=4 et foldmethod=syntax : */
 
+#include <string>
+
 #include "peerlist.hpp"
+#include "utils.hpp"
+#include "openssl/rand.h"
 
 bronco::peerlist::peerlist(const protocol::Config &config)
     : config_(config)
@@ -14,7 +18,16 @@ bronco::peerlist::peerlist(const protocol::Config &config)
 
 void bronco::peerlist::create_id()
 {
-    list_hash_ = config_.file_hash();
+    const size_t rand_bytes(8);
+    char *rndm(new char[rand_bytes]);
+    RAND_bytes(reinterpret_cast<unsigned char*>(rndm), rand_bytes);
+    std::string seed(rndm, rand_bytes);
+    seed.append(config_.file_hash());
+    seed.append(utils::to_string(time(0)));
+
+    list_hash_ = utils::sha1(seed.c_str(), seed.size());
+
+    delete [] rndm;
 }
 
 protocol::Peers bronco::peerlist::get_peers(const size_t no)
